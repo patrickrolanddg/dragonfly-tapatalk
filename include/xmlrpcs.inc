@@ -495,7 +495,7 @@ function _xmlrpcs_multicall_error($err)
 		var $user_data = null;
 
 		/**
-		 * @param array $dispmap the dispatch map withd efinition of exposed services
+		 * @param array $dispmap the dispatch map with definition of exposed services
 		 * @param boolean $servicenow set to false to prevent the server from runnung upon construction
 		 */
 		function xmlrpc_server($dispMap=null, $serviceNow=true)

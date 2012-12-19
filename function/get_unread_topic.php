@@ -13,7 +13,7 @@ $logfile = "log.txt";
 
 function get_unread_topic_func($xmlrpc_params)
 {
-    global $db, $auth, $user, $userinfo, $prefix, $config, $mobiquo_config, $phpbb_home;
+    global $db, $auth, $user, $userinfo, $prefix, $board_config, $mobiquo_config, $phpbb_home;
     $params = php_xmlrpc_decode($xmlrpc_params);
 
     $start_num  = 0;
@@ -112,7 +112,7 @@ while ($row = $db->sql_fetchrow($result))
             $forum_id = $row['forum_id'];
 
             $short_content = get_short_content($row['topic_last_post_id']);
-            $user_avatar_url = get_user_avatar_url($row['user_avatar'], $row['user_avatar_type']);
+            $user_avatar_url = get_user_avatar_url();
 
             //$allow_change_type = ($auth->acl_get('m_', $forum_id) || ($user->data['is_registered'] && $user->data['user_id'] == $row['topic_poster'])) ? true : false;
 
@@ -130,8 +130,8 @@ while ($row = $db->sql_fetchrow($result))
                 'post_time'         => new xmlrpcval(mobiquo_iso8601_encode($row['topic_last_post_time']), 'dateTime.iso8601'),
                 'icon_url'          => new xmlrpcval($user_avatar_url),
                 'can_delete'        => new xmlrpcval(false, 'boolean'),
-                'can_subscribe'     => new xmlrpcval(($config['email_enable'] || $config['jab_enable']) && $config['allow_topic_notify'] && $user->data['is_registered'], 'boolean'),
-                'can_bookmark'      => new xmlrpcval($user->data['is_registered'] && $config['allow_bookmarks'], 'boolean'),
+                'can_subscribe'     => new xmlrpcval(($board_config['email_enable'] || $board_config['jab_enable']) && $board_config['allow_topic_notify'] && $user->data['is_registered'], 'boolean'),
+                'can_bookmark'      => new xmlrpcval($user->data['is_registered'] && $board_config['allow_bookmarks'], 'boolean'),
                 'issubscribed'      => new xmlrpcval(!is_null($row['notify_status']) && $row['notify_status'] !== '' ? true : false, 'boolean'),
                 'is_subscribed'     => new xmlrpcval(!is_null($row['notify_status']) && $row['notify_status'] !== '' ? true : false, 'boolean'),
                 'isbookmarked'      => new xmlrpcval($row['bookmarked'] ? true : false, 'boolean'),

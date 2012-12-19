@@ -10,27 +10,27 @@ defined('IN_MOBIQUO') or exit;
 
 function get_subscribed_topic_func()
 {
-    global $config, $db, $user, $auth, $mobiquo_config;
-    
+    global $board_config, $db, $user, $auth, $mobiquo_config;
+
     // Only registered users can go beyond this point
     if (!$user->data['is_registered'])
     {
         return get_error(9);
     }
-    
+
     $topic_list = array();
-    if ($config['allow_topic_notify'])
+    if ($board_config['allow_topic_notify'])
     {
         $forbidden_forums = $auth->acl_getf('!f_read', true);
         $forbidden_forums = array_unique(array_keys($forbidden_forums));
-        
+
         if (isset($mobiquo_config['hide_forum_id']))
         {
             $forbidden_forums = array_unique(array_merge($forbidden_forums, $mobiquo_config['hide_forum_id']));
         }
-        
+
         $sql_array = array(
-            'SELECT'    => 't.*, 
+            'SELECT'    => 't.*,
                             f.forum_name,
                             u.user_avatar,
                             u.user_avatar_type',
@@ -46,11 +46,11 @@ function get_subscribed_topic_func()
                 AND ' . $db->sql_in_set('t.forum_id', $forbidden_forum_ary, true, true),
             'ORDER_BY'  => 't.topic_last_post_time DESC'
         );
-        
+
         $sql_array['LEFT_JOIN'] = array();
         $sql_array['LEFT_JOIN'][] = array('FROM' => array(FORUMS_TABLE => 'f'), 'ON' => 't.forum_id = f.forum_id');
-        
-        if ($config['allow_bookmarks'])
+
+        if ($board_config['allow_bookmarks'])
         {
             $sql_array['SELECT'] .= ', bm.topic_id as bookmarked';
             $sql_array['LEFT_JOIN'][] = array(
@@ -58,11 +58,11 @@ function get_subscribed_topic_func()
                 'ON'    => 'bm.user_id = ' . $user->data['user_id'] . ' AND t.topic_id = bm.topic_id'
             );
         }
-        
-        
+
+
         $sql = $db->sql_build_query('SELECT', $sql_array);
         $result = $db->sql_query_limit($sql, 20);
-        
+
         $topic_list = array();
         while ($row = $db->sql_fetchrow($result))
         {
@@ -80,7 +80,7 @@ function get_subscribed_topic_func()
             // Get folder img, topic status/type related information
             $folder_img = $folder_alt = $topic_type = '';
             topic_status($row, $replies, $unread_topic, $folder_img, $folder_alt, $topic_type);
-            
+
             $short_content = get_short_content($row['topic_last_post_id']);
             if ($forum_id) {
                 $topic_tracking = get_complete_topic_tracking($forum_id, $topic_id);
@@ -88,8 +88,8 @@ function get_subscribed_topic_func()
             } else {
                 $new_post = false;
             }
-            $user_avatar_url = get_user_avatar_url($row['user_avatar'], $row['user_avatar_type']);
-            
+            $user_avatar_url = get_user_avatar_url();
+
             $allow_change_type = ($auth->acl_get('m_', $forum_id) || ($user->data['is_registered'] && $user->data['user_id'] == $row['topic_poster'])) ? true : false;
 
             $xmlrpc_topic = new xmlrpcval(array(
@@ -106,20 +106,20 @@ function get_subscribed_topic_func()
                 'post_time'         => new xmlrpcval(mobiquo_iso8601_encode($row['topic_last_post_time']), 'dateTime.iso8601'),
                 'icon_url'          => new xmlrpcval($user_avatar_url),
                 'can_delete'        => new xmlrpcval($auth->acl_get('m_delete', $forum_id), 'boolean'),
-                'can_bookmark'      => new xmlrpcval($user->data['is_registered'] && $config['allow_bookmarks'], 'boolean'),
+                'can_bookmark'      => new xmlrpcval($user->data['is_registered'] && $board_config['allow_bookmarks'], 'boolean'),
                 'isbookmarked'      => new xmlrpcval($row['bookmarked'] ? true : false, 'boolean'),
                 'can_close'         => new xmlrpcval($auth->acl_get('m_lock', $forum_id) || ($auth->acl_get('f_user_lock', $forum_id) && $user->data['is_registered'] && $user->data['user_id'] == $row['topic_poster']), 'boolean'),
                 'is_closed'         => new xmlrpcval($row['topic_status'] == ITEM_LOCKED, 'boolean'),
                 'can_stick'         => new xmlrpcval($allow_change_type && $auth->acl_get('f_sticky', $forum_id) && $row['topic_type'] != POST_STICKY, 'boolean'),
             ), 'struct');
-    
+
             $topic_list[] = $xmlrpc_topic;
         }
         $db->sql_freeresult($result);
     }
-    
+
     $topic_num = count($topic_list);
-    
+
     $response = new xmlrpcval(
         array(
             'total_topic_num' => new xmlrpcval($topic_num, 'int'),

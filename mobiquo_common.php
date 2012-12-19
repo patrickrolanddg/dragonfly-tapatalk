@@ -13,14 +13,14 @@ require_once('modules/Forums/nukebb.php');
 function log_it($log_data, $is_begin = false)
 {
     global $mobiquo_config;
-    
+
     if(!$mobiquo_config['keep_log'] || !$log_data)
     {
         return;
     }
-    
+
     $log_file = './log/'.date('Ymd_H').'.log';
-    
+
     if ($is_begin)
     {
         global $user;
@@ -31,7 +31,7 @@ function log_it($log_data, $is_begin = false)
         $log_data .= "USER NAME: ".$user->data['username']."\n";
         $log_data .= "PARAMETER:\n";
     }
-    
+
     file_put_contents($log_file, print_r($log_data, true), FILE_APPEND);
 }
 
@@ -52,12 +52,12 @@ function get_method_name()
 function get_error($error_code = 99, $error_message = '')
 {
     global $mobiquo_error_code;
-    
+
     if(isset($mobiquo_error_code[$error_code]) && $error_message == '')
     {
         $error_message = $mobiquo_error_code[$error_code];
     }
-    
+
     return new xmlrpcresp('', 18, $error_message); // for test purpose
     //return new xmlrpcresp('', $error_code, $mobiquo_error_code[$error_code]);
 }
@@ -66,14 +66,14 @@ function get_error($error_code = 99, $error_message = '')
 function get_short_content($post_id, $length = 200)
 {
     global $db, $prefix;
-    
+
     $sql = 'SELECT post_text
             FROM '.$prefix.'_bbposts_text
             WHERE post_id = ' . $post_id;
     $result = $db->sql_query($sql);
     $post_text = $db->sql_fetchfield('post_text');
     $db->sql_freeresult($result);
-    
+
 //    $post_text = censor_text($post_text);
     $post_text = preg_replace('/\[url.*?\].*?\[\/url.*?\]/', '[url]', $post_text);
     $post_text = preg_replace('/\[img.*?\].*?\[\/img.*?\]/', '[img]', $post_text);
@@ -95,7 +95,7 @@ function post_html_clean($str)
         "/<object .*?data=\"(http:\/\/www\.youtube\.com\/.*?)\" .*?>.*?<\/object>/si",
         "/<object .*?data=\"(http:\/\/video\.google\.com\/.*?)\" .*?>.*?<\/object>/si",
     );
-    
+
     $replace = array(
         '[url=$1]$2[/url]',
         "'[img]'.url_encode('$1').'[/img]'",
@@ -103,29 +103,29 @@ function post_html_clean($str)
         '[url=$1]YouTube Video[/url]',
         '[url=$1]Google Video[/url]'
     );
-    
+
     $str = preg_replace('/\n|\r/si', '', $str);
     // remove smile
     $str = preg_replace('/<img [^>]*?src=\"[^"]*?images\/smilies\/[^"]*?\"[^>]*?alt=\"([^"]*?)\"[^>]*?\/?>/', '$1', $str);
     $str = preg_replace('/<img [^>]*?alt=\"([^"]*?)\"[^>]*?src=\"[^"]*?images\/smilies\/[^"]*?\"[^>]*?\/?>/', '$1', $str);
-    
+
     $str = preg_replace('/<null.*?\/>/', '', $str);
     $str = preg_replace($search, $replace, $str);
     $str = strip_tags($str);
     $str = html_entity_decode($str, ENT_QUOTES, 'UTF-8');
-    
-    // change relative path to absolute URL 
+
+    // change relative path to absolute URL
     $str = preg_replace('/\[img\]\.\.\/(.*?)\[\/img\]/si', "[img]$phpbb_home/$1[/img]", $str);
     $str = preg_replace('#\[img\]'.addslashes($phpbb_root_path).'(.*?)\[/img\]#si', "[img]$phpbb_home$1[/img]", $str);
     // remove link on img
     $str = preg_replace('/\[url=[^\]]*?\]\s*(\[img\].*?\[\/img\])\s*\[\/url\]/si', '$1', $str);
-    
+
     // cut quote content to 100 charactors
     if ($mobiquo_config['shorten_quote'])
     {
         $str = cut_quote($str, 100);
     }
-    
+
     return parse_bbcode($str);
 }
 
@@ -137,7 +137,7 @@ function parse_bbcode($str)
         '#\[(i)\](.*?)\[/i\]#si',
         '#\[color=(\#[\da-fA-F]{3}|\#[\da-fA-F]{6}|[A-Za-z]{1,20}|rgb\(\d{1,3}, ?\d{1,3}, ?\d{1,3}\))\](.*?)\[/color\]#si',
     );
-    
+
     if ($GLOBALS['return_html']) {
         $replace = array(
             '<$1>$2</$1>',
@@ -149,17 +149,17 @@ function parse_bbcode($str)
     } else {
         $replace = '$2';
     }
-    
+
     return preg_replace($search, $replace, $str);
 }
 
 function parse_quote($str)
 {
     $blocks = preg_split('/(<blockquote.*?>|<\/blockquote>)/i', $str, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
-    
+
     $quote_level = 0;
     $message = '';
-        
+
     foreach($blocks as $block)
     {
         if (preg_match('/<blockquote.*?>/i', $block)) {
@@ -175,74 +175,61 @@ function parse_quote($str)
             if ($quote_level <= 1) $message .= $block;
         }
     }
-    
+
     return $message;
 }
 
 function url_encode($url)
 {
     $url = rawurlencode($url);
-    
+
     $from = array('/%3A/', '/%2F/', '/%3F/', '/%2C/', '/%3D/', '/%26/', '/%25/', '/%23/', '/%2B/', '/%3B/', '/%5C/');
     $to   = array(':',     '/',     '?',     ',',     '=',     '&',     '%',     '#',     '+',     ';',     '\\');
     $url = preg_replace($from, $to, $url);
-    
+
     return htmlspecialchars_decode($url);
 }
 
-function get_user_avatar_url($avatar, $avatar_type, $ignore_config = false)
+function get_user_avatar_url($ignore_config = false)
 {
-    global $config, $phpbb_home, $phpEx;
+	if ($ignore_config || !$userinfo['user_allowavatar']) return '';
 
-    if (empty($avatar) || !$avatar_type || (isset($config['allow_avatar']) && !$config['allow_avatar'] && !$ignore_config))
-    {
-        return '';
-    }
-    
-    $avatar_img = '';
+	global $MAIN_CFG, $userinfo;
+	if ($MAIN_CFG['avatar']['allow_upload'] && $userinfo['user_avatar_type'] == 1)
+	{
+		# user uploaded avatar
+		$avatar = $MAIN_CFG['avatar']['path'].'/'.$userinfo['user_avatar'];
+	}
+	else if ($MAIN_CFG['avatar']['allow_remote'] && $userinfo['user_avatar_type'] == 2)
+	{
+		# remote avatar
+		$avatar = $userinfo['user_avatar'];
+	}
+	else if ($MAIN_CFG['avatar']['allow_local'] && $userinfo['user_avatar_type'] == 3 && !empty($userinfo['user_avatar']))
+	{
+		# from avatar gallery
+		$avatar = $MAIN_CFG['avatar']['gallery_path'].'/'.$userinfo['user_avatar'];
+	}
+	else
+	{
+		# falback to default avatar
+		$avatar = $MAIN_CFG['avatar']['gallery_path'].'/'.$MAIN_CFG['avatar']['default'];
+	}
 
-    switch ($avatar_type)
-    {
-        case AVATAR_UPLOAD:
-            if (isset($config['allow_avatar_upload']) && !$config['allow_avatar_upload'] && !$ignore_config)
-            {
-                return '';
-            }
-            $avatar_img = $phpbb_home . "download/file.$phpEx?avatar=";
-        break;
-
-        case AVATAR_GALLERY:
-            if (isset($config['allow_avatar_local']) && !$config['allow_avatar_local'] && !$ignore_config)
-            {
-                return '';
-            }
-            $avatar_img = $phpbb_home . $config['avatar_gallery_path'] . '/';
-        break;
-
-        case AVATAR_REMOTE:
-            if (isset($config['allow_avatar_remote']) && !$config['allow_avatar_remote'] && !$ignore_config)
-            {
-                return '';
-            }
-        break;
-    }
-
-    $avatar_img .= $avatar;
-    $avatar_img = str_replace(' ', '%20', $avatar_img);
-    
-    return $avatar_img;
+	$avatar = str_replace(' ', '%20', $avatar);
+	return $avatar;
 }
 
 
 function mobiquo_iso8601_encode($timet)
 {
     global $user;
-    
+
     $timezone = ($user->timezone)/3600;
     $t = gmdate("Ymd\TH:i:s", $timet + $user->timezone + $user->dst);
-    
+
     if($timezone >= 0){
-        $timezone = sprintf("%02d", $timezone);         
+        $timezone = sprintf("%02d", $timezone);
         $timezone = '+'.$timezone;
     }
     else{
@@ -251,7 +238,7 @@ function mobiquo_iso8601_encode($timet)
         $timezone = '-'.$timezone;
     }
     $t = $t.$timezone.':00';
-    
+
     return $t;
 }
 
@@ -259,30 +246,30 @@ function mobiquo_iso8601_encode($timet)
 function get_user_id_by_name($username)
 {
     global $db;
-    
+
     if (!$username)
     {
         return false;
     }
-    
+
     $username_clean = $db->sql_escape(utf8_clean_string($username));
-    
+
     $sql = 'SELECT user_id
             FROM ' . USERS_TABLE . "
             WHERE username_clean = '$username_clean'";
     $result = $db->sql_query($sql);
     $user_id = $db->sql_fetchfield('user_id');
     $db->sql_freeresult($result);
-    
+
     return $user_id;
 }
 
 function cut_quote($str, $keep_size)
 {
     $str_array = preg_split('/(\[quote\].*?\[\/quote\])/is', $str, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
-    
+
     $str = '';
-    
+
     foreach($str_array as $block)
     {
         if (preg_match('/\[quote\](.*?)\[\/quote\]/is', $block, $block_matches))
@@ -373,11 +360,11 @@ function video_bbcode_format($type, $url)
             break;
         default: $message = '';
     }
-    
+
     return $message;
 }
 
-if (!function_exists('itemstats_parse')) 
+if (!function_exists('itemstats_parse'))
 {
     function itemstats_parse($message)
     {
@@ -388,7 +375,7 @@ if (!function_exists('itemstats_parse'))
 function check_forum_password($forum_id)
 {
     global $user, $db;
-    
+
     $sql = 'SELECT forum_id
             FROM ' . FORUMS_ACCESS_TABLE . '
             WHERE forum_id = ' . $forum_id . '
@@ -402,7 +389,7 @@ function check_forum_password($forum_id)
     {
         return false;
     }
-    
+
     return true;
 }
 
@@ -412,12 +399,12 @@ function strip_bbcode(&$text, $uid = '')
       {
           $uid = '[0-9a-z]{5,}';
       }
-  
+
       $text = preg_replace("#\[\/?[a-z0-9\*\+\-]+(?:=.*?)?(?::[a-z])?(\:?$uid)\]#", ' ', $text);
-  
+
       $match = get_preg_expression('bbcode_htm');
       $replace = array('\1', '\2', '\1', '', '');
-      
+
       $text = preg_replace($match, $replace, $text);
 }
 
@@ -428,7 +415,7 @@ function get_preg_expression($mode)
           case 'email':
               return '[a-z0-9&\'\.\-_\+]+@[a-z0-9\-]+\.([a-z0-9\-]+\.)*[a-z]+';
           break;
-  
+
           case 'bbcode_htm':
               return array(
                   '#<!\-\- e \-\-><a href="mailto:(.*?)">.*?</a><!\-\- e \-\->#',
@@ -439,6 +426,6 @@ function get_preg_expression($mode)
               );
           break;
       }
-  
+
       return '';
   }
