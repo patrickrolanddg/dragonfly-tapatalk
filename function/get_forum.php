@@ -71,21 +71,21 @@ function get_forum_func()
             foreach($leaves as $forum_id)
             {
                 $logo_url = '';
-                if (file_exists(MOBPATH."forum_icons/$forum_id.png"))
+                if (file_exists("forum_icons/$forum_id.png"))
                 {
-                    $logo_url = MOBPATH."forum_icons/$forum_id.png";
+                    $logo_url = "forum_icons/$forum_id.png";
                 }
-                else if (MOBPATH."forum_icons/$forum_id.jpg"))
+                else if (file_exists("forum_icons/$forum_id.jpg"))
                 {
-                    $logo_url = MOBPATH."forum_icons/$forum_id.jpg";
+                    $logo_url = "forum_icons/$forum_id.jpg";
                 }
-                else if (file_exists(MOBPATH."forum_icons/default.png"))
+                else if (file_exists("forum_icons/default.png"))
                 {
-                    $logo_url = MOBPATH."mobiquo/forum_icons/default.png";
+                    $logo_url = "mobiquo/forum_icons/default.png";
                 }
                 else if ($forum_rows[$forum_id]['forum_image'])
                 {
-                    $logo_url = MOBPATH.'forum_icons/'.$forum_rows[$forum_id]['forum_image'];
+                    $logo_url = 'forum_icons/'.$forum_rows[$forum_id]['forum_image'];
                 }
   		//echo "We get here...";
                 //$unread_count = count(get_unread_topics(false, "AND t.forum_id = $forum_id"));

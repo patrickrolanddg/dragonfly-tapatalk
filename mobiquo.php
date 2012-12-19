@@ -16,17 +16,19 @@ $myFile = "log.txt";
 require_once('../includes/cmsinit.inc');
 // Initialise CPG-BB (formally phpbb)
 define('IN_PHPBB', true);
-define('BBPATH', BASEDIR.'modules/Forums/');
+global $phpbb_root_path;
+$phpbb_root_path = '../modules/Forums/';
+define('BBPATH', '../modules/Forums/');
 
 include(BBPATH.'common.php');
 define('MOBPATH', dirname(__FILE__).'/');
 // Initialise tapatalk
-include(MOBPATH.'include/xmlrpc.inc');
-include(MOBPATH.'include/xmlrpcs.inc');
-require(MOBPATH.'config/config.php');
-require(MOBPATH.'error_code.php');
-require(MOBPATH.'mobiquo_common.php');
-require(MOBPATH.'server_define.php');
+include('include/xmlrpc.inc');
+include('include/xmlrpcs.inc');
+require('config/config.php');
+require('error_code.php');
+require('mobiquo_common.php');
+require('server_define.php');
 $mobiquo_config = get_mobiquo_config();
 $phpEx = $mobiquo_config['php_extension'];
 

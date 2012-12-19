@@ -10,7 +10,7 @@ defined('IN_MOBIQUO') or exit;
 
 function get_mobiquo_config()
 {
-    $config_file = MOBPATH.'config/config.txt';
+    $config_file = 'config/config.txt';
     file_exists($config_file) or exit('config.txt does not exist');
 
     if(function_exists('file_get_contents')){
