@@ -9,7 +9,7 @@
  \*======================================================================*/
 
 defined('IN_MOBIQUO') or exit;
-// require_once('../modules/Your_Account/userinfo.php');
+// require_once(BASEDIR.'modules/Your_Account/userinfo.php');
 function login_func($xmlrpc_params)
 {
 	global $prefix, $user_prefix, $db, $userinfo, $MAIN_CFG, $board_config;

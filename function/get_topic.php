@@ -8,7 +8,7 @@
 
 defined('IN_MOBIQUO') or exit;
 if (!defined('CPG_NUKE')) { exit; }
-require_once('modules/Forums/nukebb.php');
+require_once(BASEDIR.'modules/Forums/nukebb.php');
 
 function get_topic_func($xmlrpc_params)
 {

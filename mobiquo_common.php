@@ -8,7 +8,7 @@
 
 defined('IN_MOBIQUO') or exit;
 if (!defined('CPG_NUKE')) { exit; }
-require_once('modules/Forums/nukebb.php');
+require_once(BASEDIR.'modules/Forums/nukebb.php');
 
 function log_it($log_data, $is_begin = false)
 {
@@ -87,7 +87,7 @@ function get_short_content($post_id, $length = 200)
 
 function post_html_clean($str)
 {
-    global $phpbb_root_path, $phpbb_home, $mobiquo_config;
+    global $phpbb_home, $mobiquo_config;
     $search = array(
         "/<a .*?href=\"(.*?)\".*?>(.*?)<\/a>/si",
         "/<img .*?src=\"(.*?)\".*?\/?>/sei",
@@ -116,7 +116,7 @@ function post_html_clean($str)
 
     // change relative path to absolute URL
     $str = preg_replace('/\[img\]\.\.\/(.*?)\[\/img\]/si', "[img]$phpbb_home/$1[/img]", $str);
-    $str = preg_replace('#\[img\]'.addslashes($phpbb_root_path).'(.*?)\[/img\]#si', "[img]$phpbb_home$1[/img]", $str);
+    $str = preg_replace('#\[img\]'.addslashes($phpbb_root_path).'FIXME(.*?)\[/img\]#si', "[img]$phpbb_home$1[/img]", $str);
     // remove link on img
     $str = preg_replace('/\[url=[^\]]*?\]\s*(\[img\].*?\[\/img\])\s*\[\/url\]/si', '$1', $str);
 

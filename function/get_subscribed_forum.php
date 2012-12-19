@@ -95,7 +95,7 @@ function get_subscribed_forum_func()
             if ($row['forum_last_post_id'])
             {
                 $last_post_time = $row['forum_last_post_time'];
-                $last_post_url = append_sid("{$phpbb_root_path}viewtopic.$phpEx", "f=$forum_id&amp;p=" . $row['forum_last_post_id']) . '#p' . $row['forum_last_post_id'];
+                $last_post_url = append_sid("FIXMEviewtopic.$phpEx", "f=$forum_id&amp;p=" . $row['forum_last_post_id']) . '#p' . $row['forum_last_post_id'];
             }
             else
             {
@@ -106,8 +106,8 @@ function get_subscribed_forum_func()
 //                'FORUM_ID'                => $forum_id,
 //                'FORUM_FOLDER_IMG'        => $user->img($folder_image, $folder_alt),
 //                'FORUM_FOLDER_IMG_SRC'    => $user->img($folder_image, $folder_alt, false, '', 'src'),
-//                'FORUM_IMAGE'            => ($row['forum_image']) ? '<img src="' . $phpbb_root_path . $row['forum_image'] . '" alt="' . $user->lang[$folder_alt] . '" />' : '',
-//                'FORUM_IMAGE_SRC'        => ($row['forum_image']) ? $phpbb_root_path . $row['forum_image'] : '',
+//                'FORUM_IMAGE'            => ($row['forum_image']) ? '<img src="' . FIXME . $row['forum_image'] . '" alt="' . $user->lang[$folder_alt] . '" />' : '',
+//                'FORUM_IMAGE_SRC'        => ($row['forum_image']) ? FIXME . $row['forum_image'] : '',
 //                'FORUM_NAME'            => $row['forum_name'],
 //                'FORUM_DESC'            => generate_text_for_display($row['forum_desc'], $row['forum_desc_uid'], $row['forum_desc_bitfield'], $row['forum_desc_options']),
 //                'LAST_POST_SUBJECT'        => $row['forum_last_post_subject'],
@@ -119,7 +119,7 @@ function get_subscribed_forum_func()
 //                'U_LAST_POST_AUTHOR'        => get_username_string('profile', $row['forum_last_poster_id'], $row['forum_last_poster_name'], $row['forum_last_poster_colour']),
 //
 //                'U_LAST_POST'            => $last_post_url,
-//                'U_VIEWFORUM'            => append_sid("{$phpbb_root_path}viewforum.$phpEx", 'f=' . $row['forum_id']))
+//                'U_VIEWFORUM'            => append_sid("{FIXME}viewforum.$phpEx", 'f=' . $row['forum_id']))
 //            );
 
             $logo_url = '';
