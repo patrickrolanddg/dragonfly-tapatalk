@@ -111,7 +111,7 @@ function get_topic_func($xmlrpc_params)
 
     // Get all shadow topics in this forum
     $sql = 'SELECT t.topic_moved_id, t.topic_id
-            FROM '.$prefix'_bbtopics t
+            FROM '.$prefix.'_bbtopics t
             WHERE t.forum_id = ' . $forum_id . '
             AND t.topic_type IN (' . POST_NORMAL . ', ' . POST_STICKY . ', ' . POST_ANNOUNCE . ')' .
             $sql_approved;
