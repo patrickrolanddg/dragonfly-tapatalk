@@ -239,7 +239,7 @@ function get_topic_func($xmlrpc_params)
         //$replies = ($auth->acl_get('m_approve', $forum_id)) ? $row['topic_replies_real'] : $row['topic_replies'];
         $short_content = get_short_content($row['topic_first_post_id']);
         $user_avatar_url = get_user_avatar_url($row['user_avatar'], $row['user_avatar_type']);
-        $topic_tracking = get_complete_topic_tracking($forum_id, $row['topic_id']);
+        //$topic_tracking = get_complete_topic_tracking($forum_id, $row['topic_id']);
         $new_post = $topic_tracking[$row['topic_id']] < $row['topic_time'] ? true : false;
 
         //$allow_change_type = ($auth->acl_get('m_', $forum_id) || (is_user() && $userinfo['user_id'] == $row['topic_poster'])) ? true : false;
@@ -247,7 +247,7 @@ function get_topic_func($xmlrpc_params)
         $xmlrpc_topic = new xmlrpcval(array(
             'forum_id'          => new xmlrpcval($forum_id),
             'topic_id'          => new xmlrpcval($row['topic_moved_id'] ? $row['topic_moved_id'] : $row['topic_id']),
-            'topic_title'       => new xmlrpcval(html_entity_decode(strip_tags(censor_text($row['topic_title'])), ENT_QUOTES, 'UTF-8'), 'base64'),
+            'topic_title'       => new xmlrpcval(html_entity_decode(($row['topic_title']), ENT_QUOTES, 'UTF-8'), 'base64'),
             'topic_author_id'   => new xmlrpcval($row['topic_poster']),
             'topic_author_name' => new xmlrpcval(html_entity_decode($topic_first_poster_name), 'base64'),
             'last_reply_time'   => new xmlrpcval(mobiquo_iso8601_encode($row['topic_time']),'dateTime.iso8601'),
