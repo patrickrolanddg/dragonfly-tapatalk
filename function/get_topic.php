@@ -236,13 +236,13 @@ function get_topic_func($xmlrpc_params)
 		$topic_first_poster_name = $row['user_id'];
 	}
 
-        $replies = ($auth->acl_get('m_approve', $forum_id)) ? $row['topic_replies_real'] : $row['topic_replies'];
+        //$replies = ($auth->acl_get('m_approve', $forum_id)) ? $row['topic_replies_real'] : $row['topic_replies'];
         $short_content = get_short_content($row['topic_first_post_id']);
         $user_avatar_url = get_user_avatar_url($row['user_avatar'], $row['user_avatar_type']);
         $topic_tracking = get_complete_topic_tracking($forum_id, $row['topic_id']);
         $new_post = $topic_tracking[$row['topic_id']] < $row['topic_time'] ? true : false;
 
-        $allow_change_type = ($auth->acl_get('m_', $forum_id) || (is_user() && $userinfo['user_id'] == $row['topic_poster'])) ? true : false;
+        //$allow_change_type = ($auth->acl_get('m_', $forum_id) || (is_user() && $userinfo['user_id'] == $row['topic_poster'])) ? true : false;
 
         $xmlrpc_topic = new xmlrpcval(array(
             'forum_id'          => new xmlrpcval($forum_id),
@@ -251,24 +251,24 @@ function get_topic_func($xmlrpc_params)
             'topic_author_id'   => new xmlrpcval($row['topic_poster']),
             'topic_author_name' => new xmlrpcval(html_entity_decode($topic_first_poster_name), 'base64'),
             'last_reply_time'   => new xmlrpcval(mobiquo_iso8601_encode($row['topic_time']),'dateTime.iso8601'),
-            'reply_number'      => new xmlrpcval($replies, 'int'),
-            'view_number'       => new xmlrpcval($row['topic_views'], 'int'),
+            'reply_number'      => new xmlrpcval(0, 'int'), // FIXME
+            'view_number'       => new xmlrpcval(0, 'int'), // FIXME
             'short_content'     => new xmlrpcval($short_content, 'base64'),
             'new_post'          => new xmlrpcval($new_post, 'boolean'),
             'icon_url'          => new xmlrpcval($user_avatar_url),
-            'can_delete'        => new xmlrpcval($auth->acl_get('m_delete', $forum_id), 'boolean'),
+            'can_delete'        => new xmlrpcval(false, 'boolean'), // FIXME
             'can_subscribe'     => new xmlrpcval(($config['email_enable'] || $config['jab_enable']) && $config['allow_topic_notify'] && is_user(), 'boolean'),
             'can_bookmark'      => new xmlrpcval(is_user() && $config['allow_bookmarks'], 'boolean'),
             'issubscribed'      => new xmlrpcval(!is_null($row['notify_status']) && $row['notify_status'] !== '' ? true : false, 'boolean'),
             'is_subscribed'     => new xmlrpcval(!is_null($row['notify_status']) && $row['notify_status'] !== '' ? true : false, 'boolean'),
             'isbookmarked'      => new xmlrpcval($row['bookmarked'] ? true : false, 'boolean'),
-            'can_close'         => new xmlrpcval($auth->acl_get('m_lock', $forum_id) || ($auth->acl_get('f_user_lock', $forum_id) && is_user() && $userinfo['user_id'] == $row['topic_poster']), 'boolean'),
+            'can_close'         => new xmlrpcval(false, 'boolean'), //FIXME
             'is_closed'         => new xmlrpcval($row['topic_status'] == ITEM_LOCKED, 'boolean'),
-            'can_stick'         => new xmlrpcval($allow_change_type && $auth->acl_get('f_sticky', $forum_id) && $row['topic_type'] != POST_STICKY, 'boolean'),
-            'to_normal'         => new xmlrpcval($allow_change_type && $auth->acl_gets('f_sticky', 'f_announce', $forum_id) && $row['topic_type'] != POST_NORMAL, 'boolean'),
-            'can_move'          => new xmlrpcval($auth->acl_get('m_move', $forum_id), 'boolean'),
+            'can_stick'         => new xmlrpcval(true, 'boolean'), // FIXME
+            'to_normal'         => new xmlrpcval(true, 'boolean'), // FIXME
+            'can_move'          => new xmlrpcval(true, 'boolean'), //FIXME
 
-            'attachment'        => new xmlrpcval($auth->acl_get('u_download') && $auth->acl_get('f_download', $forum_id) && $row['topic_attachment'] ? 1 : 0, 'string'),
+            'attachment'        => new xmlrpcval('0', 'string'), //FIXME
         ), 'struct');
 
         $topic_list[] = $xmlrpc_topic;
@@ -289,7 +289,7 @@ function get_topic_func($xmlrpc_params)
         $topic_num = $topics_count;
     }
 
-    $allowed = $auth->acl_get('f_attach', $forum_id) && $auth->acl_get('u_attach') && $config['allow_attachments'] && @ini_get('file_uploads') != '0' && strtolower(@ini_get('file_uploads')) != 'off';
+    //$allowed = $auth->acl_get('f_attach', $forum_id) && $auth->acl_get('u_attach') && $config['allow_attachments'] && @ini_get('file_uploads') != '0' && strtolower(@ini_get('file_uploads')) != 'off';
 
     $response = new xmlrpcval(
         array(
@@ -298,8 +298,8 @@ function get_topic_func($xmlrpc_params)
             'unread_announce_count' => new xmlrpcval($unread_announce_count, 'int'),
             'forum_id'        => new xmlrpcval($forum_id, 'string'),
             'forum_name'      => new xmlrpcval(html_entity_decode($forum_data['forum_name']), 'base64'),
-            'can_post'        => new xmlrpcval($auth->acl_get('f_post', $forum_id), 'boolean'),
-            'can_upload'      => new xmlrpcval($allowed, 'boolean'),
+            'can_post'        => new xmlrpcval(is_user(), 'boolean'), //FIXME
+            'can_upload'      => new xmlrpcval(false, 'boolean'),
             'topics'          => new xmlrpcval($topic_list, 'array'),
         ),
         'struct'
