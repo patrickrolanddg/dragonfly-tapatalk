@@ -141,8 +141,9 @@ function get_topic_func($xmlrpc_params)
                 AND t.topic_type IN (' . $topic_type . ') ' .
                 $sql_shadow_out . ' ' .
                 $sql_approved . '
-                ORDER BY ' . $sql_sort_order;
-        $result = $db->sql_query_limit($sql, $sql_limit, $start_num);
+                ORDER BY ' . $sql_sort_order."
+								LIMIT $sql_limit OFFSET $start_num";
+        $result = $db->sql_query($sql);
     }
     else    // get normal topics from $start_num to $end_num
     {
@@ -230,7 +231,7 @@ function get_topic_func($xmlrpc_params)
     foreach($rowset as $row)
     {
 	$topic_posterid = $row['topic_poster'];
-	$sqlusr = 'SELECT username from '.$prefix.'_users WHERE user_id = $topic_posterid';
+	$sqlusr = 'SELECT username from '.$prefix.'_users WHERE user_id = '. $topic_posterid;
 	while ($row = $db->sql_fetchrow($sqlusr))
     	{
 		$topic_first_poster_name = $row['user_id'];
