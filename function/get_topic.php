@@ -212,11 +212,10 @@ function get_topic_func($xmlrpc_params)
                     LEFT JOIN '.$prefix.'_users u ON (t.topic_poster = u.user_id)
                     LEFT JOIN '.$prefix_bbtopics_watch.' tw ON (tw.user_id = ' . $user->data['user_id'] . ' AND t.topic_id = tw.topic_id)
                 WHERE t.forum_id = ' . $forum_id.'
-                AND t.topic_type = ' . POST_NORMAL . ' ' .
+                AND t.topic_type = 0 ' .
                 $sql_shadow_out . ' ' .
                 $sql_approved . '
                 ORDER BY ' . $sql_sort_order;
-
         $result = $db->sql_query($sql);
     }
 
