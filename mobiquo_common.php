@@ -204,22 +204,16 @@ function get_user_avatar_url($avatar, $avatar_type, $ignore_config = false)
     switch ($avatar_type)
     {
 	case USER_AVATAR_UPLOAD:
-		if (isset($MAIN_CFG['avatar']['allow_upload']) && !$MAIN_CFG['avatar']['allow_upload'])
-		{
-			$avatar_img = ( $MAIN_CFG['avatar']['allow_upload'] ) ? $MAIN_CFG['avatar']['path'].'/' : '' ;
-		}
+		$avatar_img = ( $MAIN_CFG['avatar']['allow_upload'] ) ? 'http://'.$_SERVER['SERVER_NAME'].'/'.$MAIN_CFG['avatar']['path'].'/' : '' ;
 		break;
 	case USER_AVATAR_REMOTE:
 		if (isset($MAIN_CFG['avatar']['allow_remote']) && !$MAIN_CFG['avatar']['allow_remote'])
 		{
-			return 'moo.gif';
+			return '';
 		}
 		break;
 	case USER_AVATAR_GALLERY:
-		if (isset($MAIN_CFG['avatar']['allow_local']) && !$MAIN_CFG['avatar']['allow_local'])
-		{
-			$avatar_img = ( $MAIN_CFG['avatar']['allow_local'] ) ? $MAIN_CFG['avatar']['gallery_path'].'/' : '';
-		}
+		$avatar_img = ( $MAIN_CFG['avatar']['allow_local'] ) ? 'http://'.$_SERVER['SERVER_NAME'].'/'.$MAIN_CFG['avatar']['gallery_path'].'/' : '';
 		break;
     }
 
