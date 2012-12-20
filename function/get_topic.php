@@ -231,9 +231,9 @@ function get_topic_func($xmlrpc_params)
     {
 	$topic_posterid = $row['topic_poster'];
 	$sqlusr = 'SELECT username from '.$prefix.'_users WHERE user_id = '. $topic_posterid;
-	while ($row = $db->sql_fetchrow($sqlusr))
+	while ($userrow = $db->sql_fetchrow($sqlusr))
     	{
-		$topic_first_poster_name = $row['user_id'];
+		$topic_first_poster_name = $userrow['user_id'];
 	}
 
         //$replies = ($auth->acl_get('m_approve', $forum_id)) ? $row['topic_replies_real'] : $row['topic_replies'];
