@@ -209,7 +209,7 @@ function get_topic_func($xmlrpc_params)
         $sql = 'SELECT t.*, u.user_avatar, u.user_avatar_type, tw.notify_status, bm.topic_id as bookmarked
                 FROM '.$prefix.'_bbtopics t
                     LEFT JOIN '.$prefix.'_users u ON (t.topic_poster = u.user_id)
-                    LEFT JOIN '.$prefix_bbtopics_watch' tw ON (tw.user_id = ' . $user->data['user_id'] . ' AND t.topic_id = tw.topic_id)
+                    LEFT JOIN '.$prefix_bbtopics_watch.' tw ON (tw.user_id = ' . $user->data['user_id'] . ' AND t.topic_id = tw.topic_id)
                 WHERE t.forum_id = ' . $forum_id.'
                 AND t.topic_type = ' . POST_NORMAL . ' ' .
                 $sql_shadow_out . ' ' .
@@ -307,4 +307,3 @@ function get_topic_func($xmlrpc_params)
 
     return new xmlrpcresp($response);
 }
-
