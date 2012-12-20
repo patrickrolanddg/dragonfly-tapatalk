@@ -134,7 +134,7 @@ function get_topic_func($xmlrpc_params)
     $unread_sticky_num = $unread_announce_count = 0;
     if (!empty($topic_type)) // get top 20 announce/sticky topics only if need
     {
-        $sql = 'SELECT t.*, tw.notify_status, bm.topic_id as bookmarked
+        $sql = 'SELECT t.*, tw.notify_status
                 FROM '.$prefix.'_bbtopics t
                     LEFT JOIN '.$prefix.'_bbtopics_watch tw ON (tw.user_id = ' . $userinfo['user_id'] . ' AND t.topic_id = tw.topic_id)
                 WHERE t.forum_id IN (' . $forum_id . ', 0)
