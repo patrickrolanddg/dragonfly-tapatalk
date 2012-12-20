@@ -148,6 +148,8 @@ function get_topic_func($xmlrpc_params)
     else    // get normal topics from $start_num to $end_num
     {
         // get total number of unread sticky topics number
+	/* We don't have get_complete_topic_tracking() in CPG-BB
+
         $sql = 'SELECT t.topic_id, t.topic_time
                 FROM '.$prefix.'_bbtopics t
                 WHERE t.forum_id = ' . $forum_id.'
@@ -179,15 +181,17 @@ function get_topic_func($xmlrpc_params)
         }
         $db->sql_freeresult($result);
 
+	*/
+
         // get total number of normal topics
-        $sql = 'SELECT count(t.topic_id) AS num_topics
+        $sql = 'SELECT (t.topic_id)
                 FROM '.$prefix.'_bbtopics t
                 WHERE t.forum_id = ' . $forum_id.'
                 AND t.topic_type = ' . POST_NORMAL . ' ' .
                 $sql_shadow_out . ' ' .
                 $sql_approved;
         $result = $db->sql_query($sql);
-        $topics_count = (int) $db->sql_fetchfield('num_topics');
+        $topics_count = $db->sql_numrows($result);
         $db->sql_freeresult($result);
 
         // If the user is trying to reach late pages, start searching from the end
