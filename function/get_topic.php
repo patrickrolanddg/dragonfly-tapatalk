@@ -210,7 +210,7 @@ function get_topic_func($xmlrpc_params)
         $sql = 'SELECT t.*, u.user_avatar, u.user_avatar_type, tw.notify_status
                 FROM '.$prefix.'_bbtopics t
                     LEFT JOIN '.$prefix.'_users u ON (t.topic_poster = u.user_id)
-                    LEFT JOIN '.FORUMS_WATCH_TABLE.' tw ON (tw.user_id = ' . $userinfo['user_id'] . ' AND t.topic_id = tw.topic_id)
+                    LEFT JOIN '. TOPICS_WATCH_TABLE .' tw ON (tw.user_id = ' . $userinfo['user_id'] . ' AND t.topic_id = tw.topic_id)
                 WHERE t.forum_id = ' . $forum_id.'
                 AND t.topic_type = ' . POST_NORMAL . ' ' .
                 $sql_shadow_out . ' ' .
