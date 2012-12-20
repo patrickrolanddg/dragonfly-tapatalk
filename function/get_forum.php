@@ -16,10 +16,10 @@ function get_forum_func()
 {
 	global $db, $auth, $user, $prefix, $config, $mobiquo_config, $BASEHREF;
 	// Get Forum Categories
-	if (!cache_load_array('category_rows', $module_name)) {
-		$category_rows = $db->sql_ufetchrowset('SELECT c.cat_id as forum_id, c.cat_title as forum_name, c.cat_order, sub_only as 1 FROM ' . CATEGORIES_TABLE . ' c ORDER BY c.cat_order', SQL_ASSOC);
-		cache_save_array('category_rows', $module_name);
-	}
+	//if (!cache_load_array('category_rows', $module_name)) {
+	//	$category_rows = $db->sql_ufetchrowset('SELECT c.cat_id as forum_id, c.cat_title as forum_name, c.cat_order, sub_only as 1 FROM ' . CATEGORIES_TABLE . ' c ORDER BY c.cat_order', SQL_ASSOC);
+	//	cache_save_array('category_rows', $module_name);
+	//}
 
 	require_once(BASEDIR.'includes/phpBB/functions_display.php');
 	$forums = display_forums(0, false);
