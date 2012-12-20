@@ -8,7 +8,7 @@
 
 defined('IN_MOBIQUO') or exit;
 if (!defined('CPG_NUKE')) { exit; }
-require_once(BASEDIR.'modules/Forums/nukebb.php');
+require_once('../modules/Forums/nukebb.php');
 
 function log_it($log_data, $is_begin = false)
 {
@@ -87,7 +87,7 @@ function get_short_content($post_id, $length = 200)
 
 function post_html_clean($str)
 {
-    global $phpbb_home, $mobiquo_config;
+    global $phpbb_root_path, $phpbb_home, $mobiquo_config;
     $search = array(
         "/<a .*?href=\"(.*?)\".*?>(.*?)<\/a>/si",
         "/<img .*?src=\"(.*?)\".*?\/?>/sei",
@@ -116,7 +116,7 @@ function post_html_clean($str)
 
     // change relative path to absolute URL
     $str = preg_replace('/\[img\]\.\.\/(.*?)\[\/img\]/si', "[img]$phpbb_home/$1[/img]", $str);
-    $str = preg_replace('#\[img\]'.addslashes($phpbb_root_path).'FIXME(.*?)\[/img\]#si', "[img]$phpbb_home$1[/img]", $str);
+    $str = preg_replace('#\[img\]'.addslashes($phpbb_root_path).'(.*?)\[/img\]#si', "[img]$phpbb_home$1[/img]", $str);
     // remove link on img
     $str = preg_replace('/\[url=[^\]]*?\]\s*(\[img\].*?\[\/img\])\s*\[\/url\]/si', '$1', $str);
 
@@ -190,34 +190,47 @@ function url_encode($url)
     return htmlspecialchars_decode($url);
 }
 
-function get_user_avatar_url($ignore_config = false)
+function get_user_avatar_url($avatar, $avatar_type, $ignore_config = false)
 {
-	if ($ignore_config || !$userinfo['user_allowavatar']) return '';
+    global $config, $phpbb_home, $phpEx;
 
-	global $MAIN_CFG, $userinfo;
-	if ($MAIN_CFG['avatar']['allow_upload'] && $userinfo['user_avatar_type'] == 1)
-	{
-		# user uploaded avatar
-		$avatar = $MAIN_CFG['avatar']['path'].'/'.$userinfo['user_avatar'];
-	}
-	else if ($MAIN_CFG['avatar']['allow_remote'] && $userinfo['user_avatar_type'] == 2)
-	{
-		# remote avatar
-		$avatar = $userinfo['user_avatar'];
-	}
-	else if ($MAIN_CFG['avatar']['allow_local'] && $userinfo['user_avatar_type'] == 3 && !empty($userinfo['user_avatar']))
-	{
-		# from avatar gallery
-		$avatar = $MAIN_CFG['avatar']['gallery_path'].'/'.$userinfo['user_avatar'];
-	}
-	else
-	{
-		# falback to default avatar
-		$avatar = $MAIN_CFG['avatar']['gallery_path'].'/'.$MAIN_CFG['avatar']['default'];
-	}
+    if (empty($avatar) || !$avatar_type || (isset($config['allow_avatar']) && !$config['allow_avatar'] && !$ignore_config))
+    {
+        return '';
+    }
 
-	$avatar = str_replace(' ', '%20', $avatar);
-	return $avatar;
+    $avatar_img = '';
+
+    switch ($avatar_type)
+    {
+        case AVATAR_UPLOAD:
+            if (isset($config['allow_avatar_upload']) && !$config['allow_avatar_upload'] && !$ignore_config)
+            {
+                return '';
+            }
+            $avatar_img = $phpbb_home . "download/file.$phpEx?avatar=";
+        break;
+
+        case AVATAR_GALLERY:
+            if (isset($config['allow_avatar_local']) && !$config['allow_avatar_local'] && !$ignore_config)
+            {
+                return '';
+            }
+            $avatar_img = $phpbb_home . $config['avatar_gallery_path'] . '/';
+        break;
+
+        case AVATAR_REMOTE:
+            if (isset($config['allow_avatar_remote']) && !$config['allow_avatar_remote'] && !$ignore_config)
+            {
+                return '';
+            }
+        break;
+    }
+
+    $avatar_img .= $avatar;
+    $avatar_img = str_replace(' ', '%20', $avatar_img);
+
+    return $avatar_img;
 }
 
 

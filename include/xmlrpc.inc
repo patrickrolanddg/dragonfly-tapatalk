@@ -35,43 +35,43 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
-	if(!function_exists('xml_parser_create'))
+if(!function_exists('xml_parser_create'))
+{
+	// For PHP 4 onward, XML functionality is always compiled-in on windows:
+	// no more need to dl-open it. It might have been compiled out on *nix...
+	if(strtoupper(substr(PHP_OS, 0, 3) != 'WIN'))
 	{
-		// For PHP 4 onward, XML functionality is always compiled-in on windows:
-		// no more need to dl-open it. It might have been compiled out on *nix...
-		if(strtoupper(substr(PHP_OS, 0, 3) != 'WIN'))
-		{
-			dl('xml.so');
-		}
+		dl('xml.so');
 	}
+}
 
-	// G. Giunta 2005/01/29: declare global these variables,
-	// so that xmlrpc.inc will work even if included from within a function
-	// Milosch: 2005/08/07 - explicitly request these via $GLOBALS where used.
-	$GLOBALS['xmlrpcI4']='i4';
-	$GLOBALS['xmlrpcInt']='int';
-	$GLOBALS['xmlrpcBoolean']='boolean';
-	$GLOBALS['xmlrpcDouble']='double';
-	$GLOBALS['xmlrpcString']='string';
-	$GLOBALS['xmlrpcDateTime']='dateTime.iso8601';
-	$GLOBALS['xmlrpcBase64']='base64';
-	$GLOBALS['xmlrpcArray']='array';
-	$GLOBALS['xmlrpcStruct']='struct';
-	$GLOBALS['xmlrpcValue']='undefined';
+// G. Giunta 2005/01/29: declare global these variables,
+// so that xmlrpc.inc will work even if included from within a function
+// Milosch: 2005/08/07 - explicitly request these via $GLOBALS where used.
+$GLOBALS['xmlrpcI4']='i4';
+$GLOBALS['xmlrpcInt']='int';
+$GLOBALS['xmlrpcBoolean']='boolean';
+$GLOBALS['xmlrpcDouble']='double';
+$GLOBALS['xmlrpcString']='string';
+$GLOBALS['xmlrpcDateTime']='dateTime.iso8601';
+$GLOBALS['xmlrpcBase64']='base64';
+$GLOBALS['xmlrpcArray']='array';
+$GLOBALS['xmlrpcStruct']='struct';
+$GLOBALS['xmlrpcValue']='undefined';
 
-	$GLOBALS['xmlrpcTypes']=array(
-		$GLOBALS['xmlrpcI4']       => 1,
-		$GLOBALS['xmlrpcInt']      => 1,
-		$GLOBALS['xmlrpcBoolean']  => 1,
-		$GLOBALS['xmlrpcString']   => 1,
-		$GLOBALS['xmlrpcDouble']   => 1,
-		$GLOBALS['xmlrpcDateTime'] => 1,
-		$GLOBALS['xmlrpcBase64']   => 1,
-		$GLOBALS['xmlrpcArray']    => 2,
-		$GLOBALS['xmlrpcStruct']   => 3
-	);
+$GLOBALS['xmlrpcTypes']=array(
+$GLOBALS['xmlrpcI4']       => 1,
+$GLOBALS['xmlrpcInt']      => 1,
+$GLOBALS['xmlrpcBoolean']  => 1,
+$GLOBALS['xmlrpcString']   => 1,
+$GLOBALS['xmlrpcDouble']   => 1,
+$GLOBALS['xmlrpcDateTime'] => 1,
+$GLOBALS['xmlrpcBase64']   => 1,
+$GLOBALS['xmlrpcArray']    => 2,
+$GLOBALS['xmlrpcStruct']   => 3
+);
 
-	$GLOBALS['xmlrpc_valid_parents'] = array(
+$GLOBALS['xmlrpc_valid_parents'] = array(
 		'VALUE' => array('MEMBER', 'DATA', 'PARAM', 'FAULT'),
 		'BOOLEAN' => array('VALUE'),
 		'I4' => array('VALUE'),
@@ -91,60 +91,60 @@
 		'FAULT' => array('METHODRESPONSE'),
 		'NIL' => array('VALUE'), // only used when extension activated
 		'EX:NIL' => array('VALUE') // only used when extension activated
-	);
+);
 
-	// define extra types for supporting NULL (useful for json or <NIL/>)
-	$GLOBALS['xmlrpcNull']='null';
-	$GLOBALS['xmlrpcTypes']['null']=1;
+// define extra types for supporting NULL (useful for json or <NIL/>)
+$GLOBALS['xmlrpcNull']='null';
+$GLOBALS['xmlrpcTypes']['null']=1;
 
-	// Not in use anymore since 2.0. Shall we remove it?
-	/// @deprecated
-	$GLOBALS['xmlEntities']=array(
+// Not in use anymore since 2.0. Shall we remove it?
+/// @deprecated
+$GLOBALS['xmlEntities']=array(
 		'amp'  => '&',
 		'quot' => '"',
 		'lt'   => '<',
 		'gt'   => '>',
 		'apos' => "'"
-	);
+		);
 
-	// tables used for transcoding different charsets into us-ascii xml
+		// tables used for transcoding different charsets into us-ascii xml
 
-	$GLOBALS['xml_iso88591_Entities']=array();
-	$GLOBALS['xml_iso88591_Entities']['in'] = array();
-	$GLOBALS['xml_iso88591_Entities']['out'] = array();
-	for ($i = 0; $i < 32; $i++)
-	{
-		$GLOBALS['xml_iso88591_Entities']['in'][] = chr($i);
-		$GLOBALS['xml_iso88591_Entities']['out'][] = '&#'.$i.';';
-	}
-	for ($i = 160; $i < 256; $i++)
-	{
-		$GLOBALS['xml_iso88591_Entities']['in'][] = chr($i);
-		$GLOBALS['xml_iso88591_Entities']['out'][] = '&#'.$i.';';
-	}
+		$GLOBALS['xml_iso88591_Entities']=array();
+		$GLOBALS['xml_iso88591_Entities']['in'] = array();
+		$GLOBALS['xml_iso88591_Entities']['out'] = array();
+		for ($i = 0; $i < 32; $i++)
+		{
+			$GLOBALS['xml_iso88591_Entities']['in'][] = chr($i);
+			$GLOBALS['xml_iso88591_Entities']['out'][] = '&#'.$i.';';
+		}
+		for ($i = 160; $i < 256; $i++)
+		{
+			$GLOBALS['xml_iso88591_Entities']['in'][] = chr($i);
+			$GLOBALS['xml_iso88591_Entities']['out'][] = '&#'.$i.';';
+		}
 
-	/// @todo add to iso table the characters from cp_1252 range, i.e. 128 to 159?
-	/// These will NOT be present in true ISO-8859-1, but will save the unwary
-	/// windows user from sending junk (though no luck when reciving them...)
-	/*
-	$GLOBALS['xml_cp1252_Entities']=array();
-	for ($i = 128; $i < 160; $i++)
-	{
-		$GLOBALS['xml_cp1252_Entities']['in'][] = chr($i);
-	}
-	$GLOBALS['xml_cp1252_Entities']['out'] = array(
-		'&#x20AC;', '?',        '&#x201A;', '&#x0192;',
-		'&#x201E;', '&#x2026;', '&#x2020;', '&#x2021;',
-		'&#x02C6;', '&#x2030;', '&#x0160;', '&#x2039;',
-		'&#x0152;', '?',        '&#x017D;', '?',
-		'?',        '&#x2018;', '&#x2019;', '&#x201C;',
-		'&#x201D;', '&#x2022;', '&#x2013;', '&#x2014;',
-		'&#x02DC;', '&#x2122;', '&#x0161;', '&#x203A;',
-		'&#x0153;', '?',        '&#x017E;', '&#x0178;'
-	);
-	*/
+		/// @todo add to iso table the characters from cp_1252 range, i.e. 128 to 159?
+		/// These will NOT be present in true ISO-8859-1, but will save the unwary
+		/// windows user from sending junk (though no luck when reciving them...)
+		/*
+		 $GLOBALS['xml_cp1252_Entities']=array();
+		 for ($i = 128; $i < 160; $i++)
+		 {
+		 $GLOBALS['xml_cp1252_Entities']['in'][] = chr($i);
+		 }
+		 $GLOBALS['xml_cp1252_Entities']['out'] = array(
+		 '&#x20AC;', '?',        '&#x201A;', '&#x0192;',
+		 '&#x201E;', '&#x2026;', '&#x2020;', '&#x2021;',
+		 '&#x02C6;', '&#x2030;', '&#x0160;', '&#x2039;',
+		 '&#x0152;', '?',        '&#x017D;', '?',
+		 '?',        '&#x2018;', '&#x2019;', '&#x201C;',
+		 '&#x201D;', '&#x2022;', '&#x2013;', '&#x2014;',
+		 '&#x02DC;', '&#x2122;', '&#x0161;', '&#x203A;',
+		 '&#x0153;', '?',        '&#x017E;', '&#x0178;'
+		 );
+		 */
 
-	$GLOBALS['xmlrpcerr'] = array(
+		$GLOBALS['xmlrpcerr'] = array(
 	'unknown_method'=>1,
 	'invalid_return'=>2,
 	'incorrect_params'=>3,
@@ -169,9 +169,9 @@
 	'dechunk_fail'=>105,
 	'server_cannot_decompress'=>106,
 	'server_decompress_fail'=>107
-	);
+		);
 
-	$GLOBALS['xmlrpcstr'] = array(
+		$GLOBALS['xmlrpcstr'] = array(
 	'unknown_method'=>'Unknown method',
 	'invalid_return'=>'Invalid return payload: enable debugging to examine incoming payload',
 	'incorrect_params'=>'Incorrect parameters passed to method',
@@ -809,7 +809,7 @@
 		var $method='http';
 		var $errno;
 		var $errstr;
-		var $debug=3;
+		var $debug=2;
 		var $username='';
 		var $password='';
 		var $authtype=1;

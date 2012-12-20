@@ -9,10 +9,10 @@
  \*======================================================================*/
 
 defined('IN_MOBIQUO') or exit;
-// require_once(BASEDIR.'modules/Your_Account/userinfo.php');
+// require_once('../modules/Your_Account/userinfo.php');
 function login_func($xmlrpc_params)
 {
-	global $prefix, $user_prefix, $db, $userinfo, $MAIN_CFG, $board_config;
+	global $prefix, $user_prefix, $db, $userinfo, $MAIN_CFG;
 	$params = php_xmlrpc_decode($xmlrpc_params);
 //	$user->setup('ucp');
 
@@ -29,7 +29,7 @@ print_r($userinfo);
 	$sql = "SELECT user_id from ".$prefix."_users WHERE username='".$username."' AND user_password='".$password."' AND user_level!='0' AND user_active='1' ";
         $result = $db->sql_query($sql);
         $login_status = false;
-
+	
 
     if($db->sql_numrows($result) != NULL){
         $login_status = true;
@@ -57,8 +57,8 @@ print_r($userinfo);
         'result'        => new xmlrpcval($login_status, 'boolean'),
         'result_text'   => new xmlrpcval($error_msg, 'base64'),
         'user_id'       => new xmlrpcval($user_id, 'string'),
-        'can_pm'        => new xmlrpcval($board_config['allow_privmsg'] ? true : false, 'boolean'),
-        'can_send_pm'   => new xmlrpcval($board_config['allow_privmsg'] ? true : false, 'boolean'),
+        'can_pm'        => new xmlrpcval($config['allow_privmsg'] ? true : false, 'boolean'),
+        'can_send_pm'   => new xmlrpcval($config['allow_privmsg'] ? true : false, 'boolean'),
         'usergroup_id'  => new xmlrpcval($usergroup_id, 'array'),
     ), 'struct');
 
