@@ -12,7 +12,7 @@ require_once('modules/Forums/nukebb.php');
 
 function get_topic_func($xmlrpc_params)
 {
-    global $db, $auth, $prefix, $user, $config;
+    global $db, $auth, $prefix, $userinfo, $config;
 
     $params = php_xmlrpc_decode($xmlrpc_params);
 
@@ -136,7 +136,7 @@ function get_topic_func($xmlrpc_params)
     {
         $sql = 'SELECT t.*, tw.notify_status, bm.topic_id as bookmarked
                 FROM '.$prefix.'_bbtopics t
-                    LEFT JOIN '.$prefix.'_bbtopics_watch tw ON (tw.user_id = ' . $user->data['user_id'] . ' AND t.topic_id = tw.topic_id)
+                    LEFT JOIN '.$prefix.'_bbtopics_watch tw ON (tw.user_id = ' . $userinfo['user_id'] . ' AND t.topic_id = tw.topic_id)
                 WHERE t.forum_id IN (' . $forum_id . ', 0)
                 AND t.topic_type IN (' . $topic_type . ') ' .
                 $sql_shadow_out . ' ' .
@@ -210,9 +210,9 @@ function get_topic_func($xmlrpc_params)
         $sql = 'SELECT t.*, u.user_avatar, u.user_avatar_type, tw.notify_status, bm.topic_id as bookmarked
                 FROM '.$prefix.'_bbtopics t
                     LEFT JOIN '.$prefix.'_users u ON (t.topic_poster = u.user_id)
-                    LEFT JOIN '.$prefix_bbtopics_watch.' tw ON (tw.user_id = ' . $user->data['user_id'] . ' AND t.topic_id = tw.topic_id)
+                    LEFT JOIN '.$prefix_bbtopics_watch.' tw ON (tw.user_id = ' . $userinfo['user_id'] . ' AND t.topic_id = tw.topic_id)
                 WHERE t.forum_id = ' . $forum_id.'
-                AND t.topic_type = 0 ' .
+                AND t.topic_type = ' . POST_NORMAL . ' ' .
                 $sql_shadow_out . ' ' .
                 $sql_approved . '
                 ORDER BY ' . $sql_sort_order;
@@ -242,7 +242,7 @@ function get_topic_func($xmlrpc_params)
         $topic_tracking = get_complete_topic_tracking($forum_id, $row['topic_id']);
         $new_post = $topic_tracking[$row['topic_id']] < $row['topic_time'] ? true : false;
 
-        $allow_change_type = ($auth->acl_get('m_', $forum_id) || ($user->data['is_registered'] && $user->data['user_id'] == $row['topic_poster'])) ? true : false;
+        $allow_change_type = ($auth->acl_get('m_', $forum_id) || (is_user() && $userinfo['user_id'] == $row['topic_poster'])) ? true : false;
 
         $xmlrpc_topic = new xmlrpcval(array(
             'forum_id'          => new xmlrpcval($forum_id),
@@ -257,12 +257,12 @@ function get_topic_func($xmlrpc_params)
             'new_post'          => new xmlrpcval($new_post, 'boolean'),
             'icon_url'          => new xmlrpcval($user_avatar_url),
             'can_delete'        => new xmlrpcval($auth->acl_get('m_delete', $forum_id), 'boolean'),
-            'can_subscribe'     => new xmlrpcval(($config['email_enable'] || $config['jab_enable']) && $config['allow_topic_notify'] && $user->data['is_registered'], 'boolean'),
-            'can_bookmark'      => new xmlrpcval($user->data['is_registered'] && $config['allow_bookmarks'], 'boolean'),
+            'can_subscribe'     => new xmlrpcval(($config['email_enable'] || $config['jab_enable']) && $config['allow_topic_notify'] && is_user(), 'boolean'),
+            'can_bookmark'      => new xmlrpcval(is_user() && $config['allow_bookmarks'], 'boolean'),
             'issubscribed'      => new xmlrpcval(!is_null($row['notify_status']) && $row['notify_status'] !== '' ? true : false, 'boolean'),
             'is_subscribed'     => new xmlrpcval(!is_null($row['notify_status']) && $row['notify_status'] !== '' ? true : false, 'boolean'),
             'isbookmarked'      => new xmlrpcval($row['bookmarked'] ? true : false, 'boolean'),
-            'can_close'         => new xmlrpcval($auth->acl_get('m_lock', $forum_id) || ($auth->acl_get('f_user_lock', $forum_id) && $user->data['is_registered'] && $user->data['user_id'] == $row['topic_poster']), 'boolean'),
+            'can_close'         => new xmlrpcval($auth->acl_get('m_lock', $forum_id) || ($auth->acl_get('f_user_lock', $forum_id) && is_user() && $userinfo['user_id'] == $row['topic_poster']), 'boolean'),
             'is_closed'         => new xmlrpcval($row['topic_status'] == ITEM_LOCKED, 'boolean'),
             'can_stick'         => new xmlrpcval($allow_change_type && $auth->acl_get('f_sticky', $forum_id) && $row['topic_type'] != POST_STICKY, 'boolean'),
             'to_normal'         => new xmlrpcval($allow_change_type && $auth->acl_gets('f_sticky', 'f_announce', $forum_id) && $row['topic_type'] != POST_NORMAL, 'boolean'),
