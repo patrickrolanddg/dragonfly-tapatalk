@@ -260,7 +260,7 @@ function get_topic_func($xmlrpc_params)
 			'view_number'       => new xmlrpcval(0, 'int'), // FIXME
 			'short_content'     => new xmlrpcval($short_content, 'base64'),
 			'new_post'          => new xmlrpcval($new_post, 'boolean'),
-			'icon_url'          => new xmlrpcval($BASEHREF.'images/avatars/gallery/blank.gif'),
+			'icon_url'          => new xmlrpcval($user_avatar_url),
 			//'can_delete'        => new xmlrpcval(false, 'boolean'), // FIXME
 			//'can_subscribe'     => new xmlrpcval(($config['email_enable'] || $config['jab_enable']) && $config['allow_topic_notify'] && is_user(), 'boolean'),
 			//'can_bookmark'      => new xmlrpcval(is_user() && $config['allow_bookmarks'], 'boolean'),
