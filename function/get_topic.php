@@ -118,6 +118,9 @@ function get_topic_func($xmlrpc_params)
 		AND t.topic_type IN (' . POST_NORMAL . ', ' . POST_STICKY . ', ' . POST_ANNOUNCE . ')' .
 		$sql_approved;
 	$result = $db->sql_query($sql);
+	
+	//Get the topic count for this forum
+	$topcs_number = $db->sql_numrows($result);
 
 	$shadow_topic_list = array();
 	while ($row = $db->sql_fetchrow($result, SQL_ASSOC))
@@ -149,7 +152,7 @@ function get_topic_func($xmlrpc_params)
 	else    // get normal topics from $start_num to $end_num
 	{
 		// get total number of unread sticky topics number
-		/*$sql = 'SELECT t.topic_id, t.topic_time
+		$sql = 'SELECT t.topic_id, t.topic_time
 			FROM '.$prefix.'_bbtopics t
 			WHERE t.forum_id = ' . $forum_id.'
 			AND t.topic_type = ' . POST_STICKY . ' ' .
@@ -158,14 +161,12 @@ function get_topic_func($xmlrpc_params)
 		$result = $db->sql_query($sql);
 		while ($row = $db->sql_fetchrow($result))
 		{
-			$topic_tracking = get_complete_topic_tracking($forum_id, $row['topic_id']);
-			if ($topic_tracking[$row['topic_id']] < $row['topic_time'])
 			$unread_sticky_num++;
 		}
-		$db->sql_freeresult($result);*/
+		$db->sql_freeresult($result);
 
 		// get total number of unread announce topics number
-		/*$sql = 'SELECT t.topic_id, t.topic_time
+			$sql = 'SELECT t.topic_id, t.topic_time
 			FROM '.$prefix.'_bbtopics t
 			WHERE t.forum_id IN (' . $forum_id . ', 0)
 			AND t.topic_type IN (' . POST_ANNOUNCE . ') ' .
@@ -174,21 +175,19 @@ function get_topic_func($xmlrpc_params)
 		$result = $db->sql_query($sql);
 		while ($row = $db->sql_fetchrow($result))
 		{
-			$topic_tracking = get_complete_topic_tracking($forum_id, $row['topic_id']);
-			if ($topic_tracking[$row['topic_id']] < $row['topic_time'])
 			$unread_announce_count++;
 		}
-		$db->sql_freeresult($result);*/
+		$db->sql_freeresult($result);
 
 		// get total number of normal topics
-		$sql = 'SELECT count(t.topic_id) AS num_topics
+		$sql = 'SELECT t.topic_id AS num_topics
 			FROM '.$prefix.'_bbtopics t
 			WHERE t.forum_id = ' . $forum_id.'
 			AND t.topic_type = ' . POST_NORMAL . ' ' .
 			$sql_shadow_out . ' ' .
 			$sql_approved;
 		$result = $db->sql_query($sql);
-		//$topics_count = (int) $db->sql_fetchfield('num_topics');
+		$topics_count = (int) $db->sql_numrows($result);
 		$db->sql_freeresult($result);
 
 		// If the user is trying to reach late pages, start searching from the end
@@ -298,8 +297,8 @@ function get_topic_func($xmlrpc_params)
 
 	$response = new xmlrpcval(array(
 		'total_topic_num' => new xmlrpcval($topic_num, 'int'),
-		//'unread_sticky_count'   => new xmlrpcval($unread_sticky_num, 'int'),
-		//'unread_announce_count' => new xmlrpcval($unread_announce_count, 'int'),
+		'unread_sticky_count'   => new xmlrpcval($unread_sticky_num, 'int'),
+		'unread_announce_count' => new xmlrpcval($unread_announce_count, 'int'),
 		'forum_id'        => new xmlrpcval($forum_id, 'string'),
 		'forum_name'      => new xmlrpcval(html_entity_decode($forum_data['forum_name']), 'base64'),
 		//'can_post'        => new xmlrpcval(is_user(), 'boolean'), //FIXME
