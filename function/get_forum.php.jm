@@ -1,0 +1,61 @@
+<?php
+/*======================================================================*\
+ || #################################################################### ||
+ || # DragonflyCMS Tapatalk plugin                                     # ||
+ || # Written by Jeff Mills (hybiepoo@hotmail.com) with help from      # ||
+ || # existing phpbb3 plugin for Tapatalk                              # ||
+ || # http://www.tapatalk.com | http://www.tapatalk.com/license.html   # ||
+ || #################################################################### ||
+ \*======================================================================*/
+
+defined('IN_MOBIQUO') or exit;
+
+function get_forum_func()
+{
+	global $db, $auth, $user, $prefix, $config, $mobiquo_config, $phpbb_home;
+
+	$unread = array();
+	$forum_rows = array();
+	if (!defined('CPG_NUKE')) { exit; }
+	require_once('modules/Forums/nukebb.php');
+	// Get the Forum Categories
+	$sql = 'SELECT * from '.$prefix.'_bbcategories ORDER BY cat_order ASC';
+	$result = $db->sql_query($sql);
+	$forum_rows[0] = array('forum_id' => 0, 'parent_id' => -1, 'child' => array());
+	while ($row = $db->sql_fetchrow($result)) {
+			 // Lets add 1000 to the category ID so we don't get mixed up with actual forum IDs
+			$forum_id = $row['cat_id'] + 1000;
+			$forum_name = $row['cat_title'];
+			$row['can_subscribe'] = false;
+			$row['is_subscribed'] = false;
+			$logo_url = '../modules/Forums/admin/forums.png';
+			$forum_rows[$forum_id] = $row;
+		// Set up the output Array
+		$xmlrpc_forum = new xmlrpcval(array(
+                    'forum_id'      => new xmlrpcval($forum_id),
+                    'forum_name'    => new xmlrpcval(html_entity_decode($forum_rows[$forum_id]['forum_name']), 'base64'),
+                    'description'   => new xmlrpcval(html_entity_decode($forum_rows[$forum_id]['forum_desc']), 'base64'),
+                    'parent_id'     => new xmlrpcval($forum_rows[$forum_id]['parent_id']),
+                    'logo_url'      => new xmlrpcval($logo_url),
+                    'new_post'      => new xmlrpcval($forum_rows[$forum_id]['unread_count'] ? true : false, 'boolean'),
+                    'unread_count'  => new xmlrpcval($forum_rows[$forum_id]['unread_count'], 'int'),
+                    'is_protected'  => new xmlrpcval($forum_rows[$forum_id]['forum_password'] ? true : false, 'boolean'),
+                    'url'           => new xmlrpcval($forum_rows[$forum_id]['forum_link']),
+                    'sub_only'      => new xmlrpcval($forum_rows[$forum_id]['sub_only']),
+                    'can_subscribe' => new xmlrpcval($forum_rows[$forum_id]['can_subscribe'], 'boolean'),
+                    'is_subscribed' => new xmlrpcval($forum_rows[$forum_id]['is_subscribed'], 'boolean'),
+                ), 'struct');
+		if ($forum_id != '0') {
+			$xmlrpc_forum->addStruct(array('child' => new xmlrpcval($forum_rows[0]['child'], 'array')));
+                }
+                $forum_rows[$node_forum_id]['child'][] = $xmlrpc_forum;
+                unset($forum_rows[$forum_id]);
+	}
+$db->sql_freeresult($result);
+//print_r ($forum_rows);
+ $response = new xmlrpcval($forum_rows[0]['child'], 'array');
+
+    return new xmlrpcresp($xmlrpc_forum);
+
+}
+?>
