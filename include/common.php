@@ -33,62 +33,8 @@ function encodeCharset($str,$out,$in=''){
 	}
 }
 function get_userid_by_name($name){
-	global $vbulletin;
-	global $db;
-
-	$username = htmlspecialchars_uni($name);
-	$q = "
-                SELECT posts, userid, username
-                FROM " . TABLE_PREFIX . "user AS user
-                WHERE username " .  "= '" . $db->escape_string($username) . "'" ;
-	
-	
-	if(file_exists( DIR . '/includes/functions_bigthree.php'.SUFFIX)){
-		require_once( DIR . '/includes/functions_bigthree.php'.SUFFIX);
-	} else {
-		require_once( DIR . '/includes/functions_bigthree.php');
-	}
-	$coventry = fetch_coventry();
-
-	$users = $db->query_read_slave($q);
-	if ($db->num_rows($users))
-	{
-		$userids = array();
-		while ($user = $db->fetch_array($users))
-		{
-			$postsum += $user['posts'];
-			$display['users']["$user[userid]"] = $user['username'];
-			$userids[] = (in_array($user['userid'], $coventry) AND !can_moderate()) ? -1 : $user['userid'];
-		}
-
-		$userids = implode(', ', $userids);
-
-		if ($vbulletin->GPC['starteronly'])
-		{
-			if ($vbulletin->GPC['showposts'])
-			{
-				$post_query_logic[50] = "post.userid IN($userids)";
-			}
-			$thread_query_logic[] = "thread.postuserid IN($userids)";
-		}
-		// add the userids to the $post_query_logic search conditions
-		else
-		{
-			if ($vbulletin->GPC['showposts'])
-			{
-				$post_query_logic[50] = "post.userid IN($userids)";
-			}
-			else
-			{       // use the (threadid, userid) index of post to limit the join
-				$post_join_query_logic = " AND post.userid IN($userids)";
-			}
-		}
-	}else {
-
-		return '-1';
-
-	}
-	return $userids;
+	$user = getusrdata(Fix_Quotes($name));
+	return $user['user_id'];
 }
 function mobiquo_chop($string){
 	global $stylevar,$vbulletin;
@@ -162,7 +108,7 @@ function post_content_clean($str){
 
 	$str = trim($str);
 	$str = htmlspecialchars_uni($str);
-	
+
 	$str = strip_tags($str);
 	return $str;
 
@@ -197,7 +143,7 @@ function post_content_clean_html($str){
 
 	$str = trim($str);
 	$str = htmlspecialchars_uni($str);
-	
+
 	$str = strip_tags($str);
 	return $str;
 
@@ -270,7 +216,7 @@ function clean_quote($text){
 			{
 				//
 				// empty stack, so add from the last close tag or the beginning of the string
-					
+
 				if ($stacksize == 0 or $stacksize ==1)
 				{
 					$newtext .= substr($text, $substr_pos, $pos - $substr_pos);
@@ -278,7 +224,7 @@ function clean_quote($text){
 
 
 				}
-					
+
 				array_push($stack, $pos);
 			}
 			else

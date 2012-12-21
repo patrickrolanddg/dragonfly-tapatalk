@@ -15,7 +15,7 @@ function get_mobiquo_config()
 
     if(function_exists('file_get_contents')){
         $tmp = file_get_contents($config_file);
-    }else{
+    } else {
         $handle = fopen($config_file, 'rb');
         $tmp = fread($handle, filesize($config_file));
         fclose($handle);
@@ -40,6 +40,5 @@ function get_mobiquo_config()
             strlen($value) and $mobiquo_config[$key] = $value;
         }
     }
-
     return $mobiquo_config;
 }

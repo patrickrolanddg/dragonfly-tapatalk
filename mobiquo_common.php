@@ -72,7 +72,7 @@ function get_short_content($post_id, $length = 200)
             WHERE post_id = ' . $post_id;
     $result = $db->sql_query($sql);
     $post_text = $db->sql_fetchfield('post_text');
-    $db->sql_freeresult($result);
+    #db->sql_freeresult($result);
 
 //    $post_text = censor_text($post_text);
     $post_text = preg_replace('/\[url.*?\].*?\[\/url.*?\]/', '[url]', $post_text);
@@ -272,7 +272,7 @@ function get_user_id_by_name($username)
             WHERE username_clean = '$username_clean'";
     $result = $db->sql_query($sql);
     $user_id = $db->sql_fetchfield('user_id');
-    $db->sql_freeresult($result);
+    #db->sql_freeresult($result);
 
     return $user_id;
 }
@@ -396,7 +396,7 @@ function check_forum_password($forum_id)
                 AND session_id = '" . $db->sql_escape($user->session_id) . "'";
     $result = $db->sql_query($sql);
     $row = $db->sql_fetchrow($result);
-    $db->sql_freeresult($result);
+    #db->sql_freeresult($result);
 
     if (!$row)
     {

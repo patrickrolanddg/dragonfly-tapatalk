@@ -26,13 +26,15 @@ $CLASS['member'] = new cpg_member();
 $userinfo = $_SESSION['CPG_USER'];
 
 define('MOBIHREF', $BASEHREF.basename(dirname($_SERVER['SCRIPT_NAME'])).'/');
+define('FORUMHREF', $BASEHREF.'modules/Forums/');
+$phpbb_root_path = '../modules/Forums/';
+
+// v9 fails including files because BASEDIR was not used in those includes
+set_include_path(get_include_path() . PATH_SEPARATOR . BASEDIR);
+
 // Initialise CPG-BB (formally phpbb)
 define('IN_PHPBB', true);
-global $phpbb_root_path;
-$phpbb_root_path = '../modules/Forums/';
-$webrootpath = '../';
-set_include_path(get_include_path() . PATH_SEPARATOR . $webrootpath);
-include($phpbb_root_path.'common.php');
+include(BASEDIR.'modules/Forums/common.php');
 
 // Initialise tapatalk
 include("./include/xmlrpc.inc");
@@ -53,7 +55,7 @@ if ($request_method_name && isset($server_param[$request_method_name]))
 
 ob_get_clean();
 $rpcServer = new xmlrpc_server($server_param, false);
-$rpcServer->setDebug(1);
+$rpcServer->setDebug(0);
 $rpcServer->compress_response = 'true';
 $rpcServer->response_charset_encoding = 'UTF-8';
 
