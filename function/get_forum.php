@@ -13,44 +13,55 @@ if (!defined('CPG_NUKE')) { exit; }
 
 function get_forum_func($xmlrpc_params)
 {
+	global $db;
 	$params = php_xmlrpc_decode($xmlrpc_params);
-	$return_description = isset($params[0]) ? true : false;
+	$desc = isset($params[0]) ? true : false;
 	$parent_id = isset($params[1]) ? intval($params[1]) : 0;
 
-	setup_style();
+	//setup_style(); required for forums images
 	require_once(BASEDIR.'includes/phpBB/functions_display.php');
+	$cats = $db->sql_ufetchrowset('SELECT cat_id, cat_title FROM ' . CATEGORIES_TABLE . ' ORDER BY cat_order', SQL_ASSOC);
 	$forums = display_forums();
 
-	foreach ($forums as &$forum)
-	{
-		$forum = dataToStruct($forum, $return_description);
+	for ($i=0, $c=count($cats); $i<$c; ++$i) {
+		$cats[$i]['forum_id']   = $cats[$i]['cat_id']+99999;
+		$cats[$i]['forum_name'] = $cats[$i]['cat_title'];
+		$cats[$i]['parent_id']  = '-1';
+		$cats[$i]['sub_only']   = true;
+		$cats[$i]['child']  = array();
+		foreach ($forums as &$forum) {
+			if ($cats[$i]['cat_id'] != $forum['cat_id']) continue;
+			if (!$forum['parent_id']) $forum['parent_id'] = $forum['cat_id']+99999;
+			$cats[$i]['child'][] = assocToStruct($forum);
+			unset($forum);
+		}
+		$cats[$i] = assocToStruct($cats[$i], $desc);
 	}
-	return new xmlrpcresp(new xmlrpcval($forums, 'array'));
+	return new xmlrpcresp(new xmlrpcval($cats, 'array'));
 }
 
-function dataToStruct(array $data, $return_description=false)
+function assocToStruct(array $data, $desc=false)
 {
-	global $BASEHREF;
 	$rpc = array(
-		'forum_id'      => new xmlrpcval($data['forum_id']),
-		'forum_name'    => new xmlrpcval(html_entity_decode($data['forum_name']), 'base64'),
-		'parent_id'     => new xmlrpcval($data['parent_id']),
-		'sub_only'      => new xmlrpcval(!empty($data['sub_only']) ?: false, 'boolean')
+		'forum_id'   => new xmlrpcval($data['forum_id']),
+		'forum_name' => new xmlrpcval(html_entity_decode($data['forum_name']), 'base64'),
+		'parent_id'  => new xmlrpcval($data['parent_id']),
+		'sub_only'   => new xmlrpcval(!empty($data['sub_only']) ?: false, 'boolean')
 	);
-	if (!empty($data['folder_image'])) {
-		$rpc['logo_url'] = new xmlrpcval($BASEHREF . $data['folder_image']);
-	}
-	if (!empty($data['forum_desc']) && $return_description) {
+	if (!empty($data['forum_desc']) && $desc) {
 		$rpc['description'] = new xmlrpcval(html_entity_decode($data['forum_desc']), 'base64');
 	}
 	if (!empty($data['forum_link'])) {
 		$rpc['url'] = new xmlrpcval($data['forum_link']);
 	}
-	# should supports multilevel subforums but $forums only contains first level subs only
+	if (!empty($data['child']))
+	{
+		$rpc['child'] = new xmlrpcval($data['child'], 'array');
+	}
 	if (!empty($data['subforums']))
 	{
-		foreach($data['subforums'] as $key => $val) {
-			$data['subforums'][$key] = dataToStruct($val);
+		for ($i=0, $c=count($data['subforums']); $i<$c; ++$i) {
+			$data['subforums'][$i] = assocToStruct($data['subforums'][$i], $desc);
 		}
 		$rpc['child'] = new xmlrpcval($data['subforums'], 'array');
 	}
