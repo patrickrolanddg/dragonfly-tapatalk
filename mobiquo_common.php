@@ -71,7 +71,8 @@ function get_short_content($post_id, $length = 200)
             FROM '.$prefix.'_bbposts_text
             WHERE post_id = ' . $post_id;
     $result = $db->sql_query($sql);
-    $post_text = $db->sql_fetchfield('post_text');
+    $textrow = $db->sql_fetchrow($result);
+    $post_text = $textrow['post_text'];
     #db->sql_freeresult($result);
 
 //    $post_text = censor_text($post_text);
@@ -81,6 +82,7 @@ function get_short_content($post_id, $length = 200)
     strip_bbcode($post_text);
     $post_text = html_entity_decode($post_text, ENT_QUOTES, 'UTF-8');
     $post_text = function_exists('mb_substr') ? mb_substr($post_text, 0, $length) : substr($post_text, 0, $length);
+
     return $post_text;
 }
 

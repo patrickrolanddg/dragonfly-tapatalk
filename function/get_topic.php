@@ -230,10 +230,11 @@ function get_topic_func($xmlrpc_params)
 	foreach($rowset as $row)
 	{
 		$topic_posterid = $row['topic_poster'];
-		$result = $db->sql_query('SELECT username from '.$prefix.'_users WHERE user_id = '. $topic_posterid);
-		while ($row = $db->sql_fetchrow($result, SQL_ASSOC))
+		$topic_first_post_id = $row['topic_first_post_id'];
+		$result = $db->sql_query('SELECT username  from '.$prefix.'_users WHERE user_id = '. $topic_posterid);
+		while ($userrow = $db->sql_fetchrow($result, SQL_ASSOC))
 		{
-			$topic_first_poster_name = $row['user_id'];
+			$topic_first_poster_name = $userrow['username'];
 		}
 		$db->sql_freeresult($result);
 
@@ -241,8 +242,8 @@ function get_topic_func($xmlrpc_params)
 		$short_content = '';
 		$user_avatar_url = '';
 		$topic_tracking = '';
-		//$short_content = get_short_content($row['topic_first_post_id']);
-		//$user_avatar_url = get_user_avatar_url($row['user_avatar'], $row['user_avatar_type']);
+		$short_content = get_short_content($topic_first_post_id);
+		$user_avatar_url = get_user_avatar_url($row['user_avatar'], $row['user_avatar_type']);
 		//$topic_tracking = get_complete_topic_tracking($forum_id, $row['topic_id']);
 		$new_post = $topic_tracking[$row['topic_id']] < $row['topic_time'] ? true : false;
 
@@ -257,7 +258,7 @@ function get_topic_func($xmlrpc_params)
 			'last_reply_time'   => new xmlrpcval(mobiquo_iso8601_encode($row['topic_time']),'dateTime.iso8601'),
 			'reply_number'      => new xmlrpcval(0, 'int'), // FIXME
 			'view_number'       => new xmlrpcval(0, 'int'), // FIXME
-			//'short_content'     => new xmlrpcval($short_content, 'base64'),
+			'short_content'     => new xmlrpcval($short_content, 'base64'),
 			'new_post'          => new xmlrpcval($new_post, 'boolean'),
 			'icon_url'          => new xmlrpcval($BASEHREF.'images/avatars/gallery/blank.gif'),
 			//'can_delete'        => new xmlrpcval(false, 'boolean'), // FIXME
