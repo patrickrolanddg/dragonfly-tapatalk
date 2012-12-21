@@ -11,7 +11,7 @@ defined('IN_MOBIQUO') or exit;
 function get_mobiquo_config()
 {
     $config_file = './config/config.txt';
-    file_exists($config_file) or exit('config.txt does not exists');
+    file_exists($config_file) or exit('config.txt does not exist');
 
     if(function_exists('file_get_contents')){
         $tmp = file_get_contents($config_file);

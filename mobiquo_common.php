@@ -192,7 +192,7 @@ function url_encode($url)
 
 function get_user_avatar_url($avatar, $avatar_type, $ignore_config = false)
 {
-    global $config, $phpbb_home, $phpEx;
+    global $config, $phpbb_home, $phpEx, $prefix, $db, $MAIN_CFG;
 
     if (empty($avatar) || !$avatar_type || (isset($config['allow_avatar']) && !$config['allow_avatar'] && !$ignore_config))
     {
@@ -203,28 +203,18 @@ function get_user_avatar_url($avatar, $avatar_type, $ignore_config = false)
 
     switch ($avatar_type)
     {
-        case AVATAR_UPLOAD:
-            if (isset($config['allow_avatar_upload']) && !$config['allow_avatar_upload'] && !$ignore_config)
-            {
-                return '';
-            }
-            $avatar_img = $phpbb_home . "download/file.$phpEx?avatar=";
-        break;
-
-        case AVATAR_GALLERY:
-            if (isset($config['allow_avatar_local']) && !$config['allow_avatar_local'] && !$ignore_config)
-            {
-                return '';
-            }
-            $avatar_img = $phpbb_home . $config['avatar_gallery_path'] . '/';
-        break;
-
-        case AVATAR_REMOTE:
-            if (isset($config['allow_avatar_remote']) && !$config['allow_avatar_remote'] && !$ignore_config)
-            {
-                return '';
-            }
-        break;
+	case USER_AVATAR_UPLOAD:
+		$avatar_img = ( $MAIN_CFG['avatar']['allow_upload'] ) ? 'http://'.$_SERVER['SERVER_NAME'].'/'.$MAIN_CFG['avatar']['path'].'/' : '' ;
+		break;
+	case USER_AVATAR_REMOTE:
+		if (isset($MAIN_CFG['avatar']['allow_remote']) && !$MAIN_CFG['avatar']['allow_remote'])
+		{
+			return '';
+		}
+		break;
+	case USER_AVATAR_GALLERY:
+		$avatar_img = ( $MAIN_CFG['avatar']['allow_local'] ) ? 'http://'.$_SERVER['SERVER_NAME'].'/'.$MAIN_CFG['avatar']['gallery_path'].'/' : '';
+		break;
     }
 
     $avatar_img .= $avatar;
