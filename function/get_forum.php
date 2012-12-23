@@ -35,6 +35,10 @@ function get_forum_func($xmlrpc_params)
 			$cats[$i]['child'][] = assocToStruct($forum);
 			unset($forum);
 		}
+		if (empty($cats[$i]['child'])) {
+			unset($cats[$i]);
+			continue;
+		}
 		$cats[$i] = assocToStruct($cats[$i], $desc);
 	}
 	return new xmlrpcresp(new xmlrpcval($cats, 'array'));
