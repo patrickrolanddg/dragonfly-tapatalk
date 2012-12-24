@@ -10,31 +10,23 @@
 
 define('IN_MOBIQUO', true);
 
-// Set up Debug File
-//$myFile = "log.txt";
-//$fh = fopen($myFile, 'w') or die("can't open file");
+$module_name = 'Forums';
 
-// Initialise DragonflyCMS core, security, session, and user config
-define('XMLFEED', 1);
+// Initialise DragonflyCMS
 require_once('../includes/cmsinit.inc');
-require_once('../includes/classes/security.php');
-require_once('../includes/classes/session.php');
-require_once('../includes/classes/cpg_member.php');
-$CPG_SESS = array();
-$SESS = new cpg_session();
-$CLASS['member'] = new cpg_member();
-$userinfo = $_SESSION['CPG_USER'];
 
-define('MOBIHREF', $BASEHREF.basename(dirname($_SERVER['SCRIPT_NAME'])).'/');
-define('FORUMHREF', $BASEHREF.'modules/Forums/');
-$phpbb_root_path = '../modules/Forums/';
+if (!is_active('Forums')) {
+	header("{$_SERVER['SERVER_PROTOCOL']} 503 Service Unavailable");
+	exit;
+}
 
-// v9 fails including files because BASEDIR was not used in those includes
+if (!defined('BASEHREF')) define('BASEHREF', $BASEHREF);
+define('MOBIHREF', BASEHREF . basename(dirname($_SERVER['SCRIPT_NAME'])).'/');
+define('FORUMHREF', BASEHREF . 'modules/Forums/');
 set_include_path(get_include_path() . PATH_SEPARATOR . BASEDIR);
 
 // Initialise CPG-BB (formally phpbb)
-define('IN_PHPBB', true);
-include(BASEDIR.'modules/Forums/common.php');
+include(BASEDIR.'modules/Forums/nukebb.php');
 
 // Initialise tapatalk
 include("./include/xmlrpc.inc");
@@ -43,8 +35,19 @@ require('./config/config.php');
 require('./error_code.php');
 require('./mobiquo_common.php');
 require('./server_define.php');
+
+
 $mobiquo_config = get_mobiquo_config();
+
+if (!$mobiquo_config['is_open']) {
+	header("{$_SERVER['SERVER_PROTOCOL']} 503 Service Unavailable");
+	exit;
+}
+
 $phpEx = $mobiquo_config['php_extension'];
+$xmlrpc_internalencoding = 'UTF-8';
+$xmlrpcName = 'DragonflyCMS/'.CPG_NUKE.' (PHP '.PHP_MAJOR_VERSION.'; '.PHP_SAPI.'; '.PHP_OS.') XML-RPC Tapatalk/3';
+$xmlrpcVersion = 'v'.$mobiquo_config['sys_version'];
 
 // Get requested function and load file
 $request_method_name = get_method_name();
@@ -53,12 +56,9 @@ if ($request_method_name && isset($server_param[$request_method_name]))
     require('./function/'.$request_method_name.'.php');
 }
 
-ob_get_clean();
 $rpcServer = new xmlrpc_server($server_param, false);
-$rpcServer->setDebug(0);
-$rpcServer->compress_response = 'true';
+$rpcServer->allow_system_funcs = false;
+$rpcServer->compress_response = 'false';
 $rpcServer->response_charset_encoding = 'UTF-8';
 
 $response = $rpcServer->service();
-//fclose($fh);
-?>

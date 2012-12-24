@@ -8,20 +8,17 @@
 || #################################################################### ||
 \*======================================================================*/
 
-defined('IN_MOBIQUO') or exit;
-if (!defined('CPG_NUKE')) { exit; }
+if (!defined('CPG_NUKE') || !defined('IN_MOBIQUO')) exit;
 
 function get_forum_func($xmlrpc_params)
 {
-	global $db;
 	$params = php_xmlrpc_decode($xmlrpc_params);
 	$desc = isset($params[0]) ? true : false;
 	$parent_id = isset($params[1]) ? intval($params[1]) : 0;
 
-	//setup_style(); required for forums images
-	require_once(BASEDIR.'includes/phpBB/functions_display.php');
+	global $db;
 	$cats = $db->sql_ufetchrowset('SELECT cat_id, cat_title FROM ' . CATEGORIES_TABLE . ' ORDER BY cat_order', SQL_ASSOC);
-	$forums = display_forums();
+	$forums = mobi_forums($parent_id);
 
 	for ($i=0, $c=count($cats); $i<$c; ++$i) {
 		$cats[$i]['forum_id']   = $cats[$i]['cat_id']+99999;
@@ -52,16 +49,15 @@ function assocToStruct(array $data, $desc=false)
 		'parent_id'  => new xmlrpcval($data['parent_id']),
 		'sub_only'   => new xmlrpcval(!empty($data['sub_only']) ?: false, 'boolean')
 	);
-	if (!empty($data['forum_desc']) && $desc) {
+	if (!empty($data['forum_desc']) && $desc)
 		$rpc['description'] = new xmlrpcval(html_entity_decode($data['forum_desc']), 'base64');
-	}
-	if (!empty($data['forum_link'])) {
-		$rpc['url'] = new xmlrpcval($data['forum_link']);
-	}
+
+	if (!empty($data['is_protected']))
+		$rpc['is_protected'] = new xmlrpcval($data['is_protected'], 'boolean');
+
 	if (!empty($data['child']))
-	{
 		$rpc['child'] = new xmlrpcval($data['child'], 'array');
-	}
+
 	if (!empty($data['subforums']))
 	{
 		for ($i=0, $c=count($data['subforums']); $i<$c; ++$i) {

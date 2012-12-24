@@ -327,6 +327,12 @@ $server_param = array(
 		'signature' => '',
 		'docstring' => ''),
 
+	'upload_attach' => array(
+		'function'  => 'upload_attach_func',
+		//'function'  => 'Dragonfly_Mobiquo_Post::attach',
+		'signature' => array(array($xmlrpcStruct)),
+		'docstring' => 'parameter should be'),
+
 	# Search
 	'search_post' => array(
 		'function'  => 'search_post_func',
@@ -336,12 +342,6 @@ $server_param = array(
 			array($xmlrpcStruct, $xmlrpcBase64, $xmlrpcInt, $xmlrpcInt),
 			array($xmlrpcStruct, $xmlrpcBase64)),
 		'docstring' => 'a simple search allows user to enter a query string and it will return a list of post that matched the query.'),
-
-	'upload_attach' => array(
-		'function'  => 'upload_attach_func',
-		//'function'  => 'Dragonfly_Mobiquo_Post::attach',
-		'signature' => array(array($xmlrpcStruct)),
-		'docstring' => 'parameter should be'),
 
 	# Private Message
 	'report_pm' => array(
@@ -441,7 +441,6 @@ $server_param = array(
 		'function'  => 'unbookmark_topic_func',
 		'signature' => array(array($xmlrpcStruct, $xmlrpcString)),
 		'docstring' => 'unbookmark_topic need one parameters as topic id.'),
-
 
 	'attach_image' => array(
 		'function'  => 'attach_image_func',
