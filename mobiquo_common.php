@@ -65,25 +65,17 @@ function get_error($error_code = 99, $error_message = '')
 
 function get_short_content($post_id, $length = 200)
 {
-    global $db, $prefix;
+    global $db;
+    list($txt) = $db->sql_ufetchrow('SELECT post_text FROM '.POSTS_TEXT_TABLE.' WHERE post_id='.$post_id);
 
-    $sql = 'SELECT post_text
-            FROM '.$prefix.'_bbposts_text
-            WHERE post_id = ' . $post_id;
-    $result = $db->sql_query($sql);
-    $textrow = $db->sql_fetchrow($result);
-    $post_text = $textrow['post_text'];
-    #db->sql_freeresult($result);
+    $txt = preg_replace('/\[url.*?\].*?\[\/url.*?\]/', '[url]', $txt);
+    $txt = preg_replace('/\[img.*?\].*?\[\/img.*?\]/', '[img]', $txt);
+    $txt = preg_replace('/[\n\r\t]+/', ' ', $txt);
+    strip_bbcode($txt);
+    $txt = html_entity_decode($txt, ENT_QUOTES, 'UTF-8');
+    $txt = function_exists('mb_substr') ? mb_substr($txt, 0, $length) : substr($txt, 0, $length);
 
-//    $post_text = censor_text($post_text);
-    $post_text = preg_replace('/\[url.*?\].*?\[\/url.*?\]/', '[url]', $post_text);
-    $post_text = preg_replace('/\[img.*?\].*?\[\/img.*?\]/', '[img]', $post_text);
-    $post_text = preg_replace('/[\n\r\t]+/', ' ', $post_text);
-    strip_bbcode($post_text);
-    $post_text = html_entity_decode($post_text, ENT_QUOTES, 'UTF-8');
-    $post_text = function_exists('mb_substr') ? mb_substr($post_text, 0, $length) : substr($post_text, 0, $length);
-
-    return $post_text;
+    return $txt;
 }
 
 
@@ -192,37 +184,25 @@ function url_encode($url)
     return htmlspecialchars_decode($url);
 }
 
-function get_user_avatar_url($avatar, $avatar_type, $ignore_config = false)
+function get_user_avatar_url($avatar, $avatar_type)
 {
-    global $config, $phpbb_home, $phpEx, $prefix, $db, $MAIN_CFG;
+	global $mobiquo_config, $MAIN_CFG;
+	if (empty($avatar)) return '';
 
-    if (empty($avatar) || !$avatar_type || (isset($config['allow_avatar']) && !$config['allow_avatar'] && !$ignore_config))
-    {
-        return '';
-    }
-
-    $avatar_img = '';
-
-    switch ($avatar_type)
-    {
-	case USER_AVATAR_UPLOAD:
-		$avatar_img = ( $MAIN_CFG['avatar']['allow_upload'] ) ? 'http://'.$_SERVER['SERVER_NAME'].'/'.$MAIN_CFG['avatar']['path'].'/' : '' ;
-		break;
-	case USER_AVATAR_REMOTE:
-		if (isset($MAIN_CFG['avatar']['allow_remote']) && !$MAIN_CFG['avatar']['allow_remote'])
-		{
-			return '';
-		}
-		break;
-	case USER_AVATAR_GALLERY:
-		$avatar_img = ( $MAIN_CFG['avatar']['allow_local'] ) ? 'http://'.$_SERVER['SERVER_NAME'].'/'.$MAIN_CFG['avatar']['gallery_path'].'/' : '';
-		break;
-    }
-
-    $avatar_img .= $avatar;
-    $avatar_img = str_replace(' ', '%20', $avatar_img);
-
-    return $avatar_img;
+	$ret = '';
+	switch (intval($avatar_type))
+	{
+		case USER_AVATAR_UPLOAD && $MAIN_CFG['avatar']['allow_upload']:
+			$ret = BASEHREF . $MAIN_CFG['avatar']['path'].'/'.$avatar;
+			break;
+		case USER_AVATAR_REMOTE && $MAIN_CFG['avatar']['allow_remote']:
+			$ret = $avatar;
+			break;
+		case USER_AVATAR_GALLERY && $MAIN_CFG['avatar']['allow_local']:
+			$ret = BASEHREF . $MAIN_CFG['avatar']['gallery_path'].'/'.$avatar;
+			break;
+	}
+	return str_replace(' ', '%20', $ret);
 }
 
 
@@ -435,81 +415,97 @@ function get_preg_expression($mode)
       return '';
   }
 
-// Added by hybrid to possibly simplify the conversion from phpbb3 plugin
+function mobi_reindex(array $array){
+	$ret = $array = array_values($array);
+	foreach($array as $k => $v)
+		if(!empty($v['subforums']))
+			$ret[$k]['subforums'] = mobi_reindex($v['subforums']);
 
+	return $ret;
+}
 
-function request_var($var_name, $default, $multibyte = false, $cookie = false)
-   {
-       if (!$cookie && isset($_COOKIE[$var_name]))
-       {
-           if (!isset($_GET[$var_name]) && !isset($_POST[$var_name]))
-           {
-               return (is_array($default)) ? array() : $default;
-           }
-           $_REQUEST[$var_name] = isset($_POST[$var_name]) ? $_POST[$var_name] : $_GET[$var_name];
-       }
-   
-       $super_global = ($cookie) ? '_COOKIE' : '_REQUEST';
-       if (!isset($GLOBALS[$super_global][$var_name]) || is_array($GLOBALS[$super_global][$var_name]) != is_array($default))
-       {
-           return (is_array($default)) ? array() : $default;
-       }
-   
-       $var = $GLOBALS[$super_global][$var_name];
-       if (!is_array($default))
-       {
-           $type = gettype($default);
-       }
-       else
-       {
-           list($key_type, $type) = each($default);
-           $type = gettype($type);
-           $key_type = gettype($key_type);
-           if ($type == 'array')
-           {
-               reset($default);
-               $default = current($default);
-               list($sub_key_type, $sub_type) = each($default);
-               $sub_type = gettype($sub_type);
-               $sub_type = ($sub_type == 'array') ? 'NULL' : $sub_type;
-               $sub_key_type = gettype($sub_key_type);
-           }
-       }
-  
-      if (is_array($var))
-      {
-          $_var = $var;
-          $var = array();
-  
-          foreach ($_var as $k => $v)
-          {
-              set_var($k, $k, $key_type);
-              if ($type == 'array' && is_array($v))
-              {
-                  foreach ($v as $_k => $_v)
-                  {
-                      if (is_array($_v))
-                      {
-                          $_v = null;
-                      }
-                      set_var($_k, $_k, $sub_key_type, $multibyte);
-                      set_var($var[$k][$_k], $_v, $sub_type, $multibyte);
-                  }
-              }
-              else
-              {
-                  if ($type == 'array' || is_array($v))
-                  {
-                      $v = null;
-                  }
-                  set_var($var[$k], $v, $type, $multibyte);
-              }
-          }
-      }
-      else
-      {
-          set_var($var, $var, $type, $multibyte);
-      }
-  
-      return $var;
-  }
+function mobi_forums($parent=0)
+{
+	global $db, $images, $userinfo, $CPG_SESS, $lang;
+	get_lang('Forums');
+
+	$parent = intval($parent);
+	$forums = array();
+	$tmp_forums = $db->sql_ufetchrowset('SELECT forum_id, auth_view, auth_read, auth_post, auth_reply, auth_edit, auth_delete,
+		auth_sticky, auth_announce, auth_vote, auth_pollcreate, auth_attachments, auth_download FROM '. FORUMS_TABLE, SQL_ASSOC);
+	$is_auth_ary = auth(AUTH_ALL, AUTH_LIST_ALL, $userinfo, $tmp_forums);
+
+	$c = count($tmp_forums);
+	for ($i=0; $i<$c; ++$i) {
+		if ($parent && $parent != $tmp_forums[$i]['forum_id'] && $parent != $tmp_forums[$i]['parent_id']) continue;
+
+		if ($is_auth_ary[$tmp_forums[$i]['forum_id']]['auth_view']) {
+			$forums[] = $tmp_forums[$i]['forum_id'];
+		}
+	}
+
+	if (!count($forums)) return array();
+	unset($tmp_forums);
+
+	$forums = implode(',', $forums);
+	$sql = 'SELECT f.*, p.post_time, u.username, u.user_id
+		FROM (( '.FORUMS_TABLE.' f
+		LEFT JOIN '.POSTS_TABLE.' p ON p.post_id = f.forum_last_post_id )
+		LEFT JOIN '.USERS_TABLE.' u ON u.user_id = p.poster_id )
+		WHERE f.forum_id IN ('.$forums.')
+		ORDER BY f.cat_id, f.forum_order';
+	$result = $db->sql_query($sql);
+
+	$forums = array();
+	while ($row = $db->sql_fetchrow($result, SQL_ASSOC))
+	{
+		if (!$is_auth_ary[$row['forum_id']]['auth_read']) $row['is_protected'] = true;
+
+		if (isset($forums[$row['parent_id']])) {
+			$forums[$row['parent_id']]['subforums'][$row['forum_id']] = $row;
+		} else {
+			$forums[$row['forum_id']] = $row;
+		}
+	}
+	$db->sql_freeresult($result);
+
+	if (is_user())
+	{
+		$lastvisit = $userinfo['user_lastvisit'];
+		if ( isset($CPG_SESS['Forums']['track_all']) ) {
+			$lastvisit = $CPG_SESS['Forums']['track_all'];
+		}
+		$result = $db->sql_query('SELECT t.forum_id, t.topic_id, p.post_time
+				FROM '.TOPICS_TABLE.' t, '.POSTS_TABLE.' p, '.FORUMS_TABLE.' f
+				WHERE p.post_id = t.topic_last_post_id
+					AND p.post_time > '.$lastvisit.'
+					AND t.topic_moved_id = 0
+					AND t.forum_id = f.forum_id
+				ORDER BY p.post_time DESC');
+		$new_topic_data = array();
+		while ($topic_data = $db->sql_fetchrow($result, SQL_ASSOC)) {
+			$new_topic_data[$topic_data['forum_id']] = 1;
+		}
+		$db->sql_freeresult($result);
+	}
+
+	$ret = array();
+	foreach ($forums as &$forum) {
+		$forum = array_merge($forum, $is_auth_ary[$forum['forum_id']]);
+		if ($forum['forum_type'] < 2 && FORUM_LOCKED == $forum['forum_status']) {
+			if (!empty($forum['subforums'])) {
+				foreach ($forum['subforums'] as &$sub) {
+					$forum['forum_topics'] += $sub['forum_topics'];
+					$forum['forum_posts'] += $sub['forum_posts'];
+					if ($sub['post_time'] > $forum['post_time']) {
+						$forum['post_time'] = $sub['post_time'];
+						$forum['username'] = $sub['username'];
+						$forum['user_id'] = $sub['user_id'];
+					}
+				}
+			}
+		}
+		//$forum['post_username'] = $forums[$i]['post_username'] ? $forums[$i]['post_username'] : $lang['Guest'];
+	}
+	return mobi_reindex($forums);
+}
