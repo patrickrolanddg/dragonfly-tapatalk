@@ -12,7 +12,7 @@ function get_subscribed_forum_func()
 {
 	# UNTESTED function
 
-	if (!is_user()) return get_error(20, 'Please login first');
+	if (!is_user()) return get_error(9);
 
 	global $db;
 	$tracked = isset($_SESSION['CPG_SESS']['Forums']['track_forums']) ? $_SESSION['CPG_SESS']['Forums']['track_forums'] : array();
