@@ -250,41 +250,6 @@ $server_param = array(
 		'signature' => array(array($xmlrpcStruct, $xmlrpcString)),
 		'docstring' => 'unsubscribe_topic need one parameters as topic id.'),
 
-	'get_thread' => array(
-		'function'  => 'get_thread_func',
-		//'function'  => 'Dragonfly_Mobiquo_Topic::get',
-		'signature' => array(
-			array($xmlrpcStruct, $xmlrpcString, $xmlrpcInt, $xmlrpcInt, $xmlrpcBoolean),
-			array($xmlrpcStruct, $xmlrpcString, $xmlrpcInt, $xmlrpcInt),
-			array($xmlrpcStruct, $xmlrpcString),
-			array($xmlrpcStruct)),
-		'docstring' => 'Returns a list of posts under the same thread, given a topic_id'),
-
-	'get_thread_by_unread' => array(
-		'function'  => 'get_thread_func',
-		//'function'  => 'Dragonfly_Mobiquo_Topic::get',
-		'signature' => array(
-			array($xmlrpcStruct, $xmlrpcString, $xmlrpcInt, $xmlrpcBoolean),
-			array($xmlrpcStruct, $xmlrpcString, $xmlrpcInt),
-			array($xmlrpcStruct, $xmlrpcString)),
-		'docstring' => 'This function provides a mean to allow users to jump to the "First Unread" post within a thread he has previously participated.
-			Please note that this function is used in conjunction with "goto_unread" in get_config function.
-			If "goto_unread" is returned and is = "1", get_thread_by_unread is always called instead of get_thread function.
-			Please be noted that this function is not invoked when under Guest mode.'),
-
-	'get_thread_by_post' => array(
-		'function'  => 'get_thread_func',
-		//'function'  => 'Dragonfly_Mobiquo_Topic::goToPost',
-		//'function'  => 'Dragonfly_Mobiquo_Post::goTo',
-		'signature' => array(
-			array($xmlrpcStruct, $xmlrpcString, $xmlrpcInt, $xmlrpcBoolean),
-			array($xmlrpcStruct, $xmlrpcString, $xmlrpcInt),
-			array($xmlrpcStruct, $xmlrpcString)),
-		'docstring' => 'This function provides a mean to allow users to jump to the exact post within a thread given the post_id as the parameter.
-			Please note that this function is used in conjunction with "goto_post" in get_config function. If "goto_post" is returned and is = "1",
-			get_thread_by_post is always called instead of get_thread function when the app attempts to enter a thread from a list of posts.
-			This function is useful, for example, when entering a thread from a list of posts generated from Search (search_'),
-
 	# Post
 	'report_post' => array(
 		'function'  => 'report_post_func',
@@ -320,6 +285,39 @@ $server_param = array(
 		'signature' => array(array($xmlrpcStruct, $xmlrpcString, $xmlrpcBase64, $xmlrpcBase64)),
 		'docstring' => 'parameter should be array(string, base64, base64)'),
 
+	'get_thread' => array(
+		'function'  => 'get_thread_func',
+		//'function'  => 'Dragonfly_Mobiquo_Post::get',
+		'signature' => array(
+			array($xmlrpcStruct, $xmlrpcString, $xmlrpcInt, $xmlrpcInt, $xmlrpcBoolean),
+			array($xmlrpcStruct, $xmlrpcString, $xmlrpcInt, $xmlrpcInt),
+			array($xmlrpcStruct, $xmlrpcString),
+			array($xmlrpcStruct)),
+		'docstring' => 'Returns a list of posts under the same thread, given a topic_id'),
+
+	'get_thread_by_unread' => array(
+		'function'  => 'get_thread_func',
+		//'function'  => 'Dragonfly_Mobiquo_Post::get',
+		'signature' => array(
+			array($xmlrpcStruct, $xmlrpcString, $xmlrpcInt, $xmlrpcBoolean),
+			array($xmlrpcStruct, $xmlrpcString, $xmlrpcInt),
+			array($xmlrpcStruct, $xmlrpcString)),
+		'docstring' => 'This function provides a mean to allow users to jump to the "First Unread" post within a thread he has previously participated.
+			Please note that this function is used in conjunction with "goto_unread" in get_config function.
+			If "goto_unread" is returned and is = "1", get_thread_by_unread is always called instead of get_thread function.
+			Please be noted that this function is not invoked when under Guest mode.'),
+
+	'get_thread_by_post' => array(
+		'function'  => 'get_thread_func',
+		//'function'  => 'Dragonfly_Mobiquo_Post::goTo',
+		'signature' => array(
+			array($xmlrpcStruct, $xmlrpcString, $xmlrpcInt, $xmlrpcBoolean),
+			array($xmlrpcStruct, $xmlrpcString, $xmlrpcInt),
+			array($xmlrpcStruct, $xmlrpcString)),
+		'docstring' => 'This function provides a mean to allow users to jump to the exact post within a thread given the post_id as the parameter.
+			Please note that this function is used in conjunction with "goto_post" in get_config function. If "goto_post" is returned and is = "1",
+			get_thread_by_post is always called instead of get_thread function when the app attempts to enter a thread from a list of posts.
+			This function is useful, for example, when entering a thread from a list of posts generated from Search (search_'),
 
 	'get_smilies' => array(
 		'function' => '',
