@@ -475,7 +475,7 @@ function mobi_forums($parent=0)
 		if ( isset($CPG_SESS['Forums']['track_all']) ) {
 			$lastvisit = $CPG_SESS['Forums']['track_all'];
 		}
-		$result = $db->sql_query('SELECT t.forum_id, t.topic_id, p.post_time
+		$result = $db->sql_query('SELECT t.forum_id, t.topic_id, t.topic_title, t.topic_replies, t.topic_views, p.post_time
 				FROM '.TOPICS_TABLE.' t, '.POSTS_TABLE.' p, '.FORUMS_TABLE.' f
 				WHERE p.post_id = t.topic_last_post_id
 					AND p.post_time > '.$lastvisit.'
@@ -484,7 +484,7 @@ function mobi_forums($parent=0)
 				ORDER BY p.post_time DESC');
 		$new_topic_data = array();
 		while ($topic_data = $db->sql_fetchrow($result, SQL_ASSOC)) {
-			$new_topic_data[$topic_data['forum_id']] = 1;
+			//$new_topic_data[$topic_data['forum_id']][$topic_data['topic_id']] = $topic_data;
 		}
 		$db->sql_freeresult($result);
 	}
@@ -493,8 +493,11 @@ function mobi_forums($parent=0)
 	foreach ($forums as &$forum) {
 		$forum = array_merge($forum, $is_auth_ary[$forum['forum_id']]);
 		if ($forum['forum_type'] < 2 && FORUM_LOCKED == $forum['forum_status']) {
-			if (!empty($forum['subforums'])) {
+			if (empty($forum['subforums'])) {
+				$forum['subonly'] = true;
+			} else {
 				foreach ($forum['subforums'] as &$sub) {
+					$forum['subonly'] = true;
 					$forum['forum_topics'] += $sub['forum_topics'];
 					$forum['forum_posts'] += $sub['forum_posts'];
 					if ($sub['post_time'] > $forum['post_time']) {
