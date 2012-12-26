@@ -19,7 +19,7 @@ if (!is_active('Forums')) {
 	header("{$_SERVER['SERVER_PROTOCOL']} 503 Service Unavailable");
 	exit;
 }
-
+ini_set('log_errors', 1);
 define('MOBIDIR', BASEDIR . basename(dirname($_SERVER['SCRIPT_NAME'])).'/');
 
 if (!defined('BASEHREF')) define('BASEHREF', $BASEHREF);
@@ -65,3 +65,5 @@ $rpcServer->compress_response = 'false';
 $rpcServer->response_charset_encoding = 'UTF-8';
 
 $response = $rpcServer->service();
+ini_restore('log_errors');
+exit;
