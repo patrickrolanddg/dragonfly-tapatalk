@@ -30,7 +30,7 @@ function get_topic_func($xmlrpc_params)
 		case 3:
 			$end_num    = intval($params[2]);
 			$start_num  = intval($params[1]);
-			break
+			break;
 		case 2:
 			$topic_type = $params[2] == 'TOP' ? '1' : ($params[2] == 'ANN' ? '2' : $topic_type);
 	}
@@ -40,7 +40,7 @@ function get_topic_func($xmlrpc_params)
 	# return at most 50 topics
 	if ($end_num - $start_num >= 50) $end_num = $start_num + 50;
 	# if both are present and are set to 0, return the first topic only
-	if (0 === $start_num 0 === $end_num) {
+	if (0 === $start_num && 0 === $end_num) {
 		$start_num = 1;
 		$end_num = 1;
 	}
@@ -51,7 +51,7 @@ function get_topic_func($xmlrpc_params)
 	$forum = !empty($forum[0]) ? $forum[0] : 0;
 	if (!$forum) return get_error(3);
 
-	if (!$forum(['auth_read'])) get_error(7);
+	if (!$forum['auth_read']) get_error(7);
 
 	if (isset($forum['subforums'])) unset($forum['subforums']);
 	if (FORUM_LINK == $forum_data['forum_type']) return get_error(4);
@@ -63,7 +63,7 @@ function get_topic_func($xmlrpc_params)
 		LEFT JOIN {$prefix}_users u
 		ON t.topic_poster=u.user_id
 		WHERE t.forum_id = $forum_id
-		AND t.topic_type IN ($topicQString)
+		AND t.topic_type IN ($topic_type)
 		ORDER BY t.topic_id DESC
 		LIMIT $sql_limit OFFSET $start_num");
 
@@ -72,8 +72,8 @@ function get_topic_func($xmlrpc_params)
 	while ($row = $db->sql_fetchrow($result, SQL_ASSOC))
 	{
 		if (is_user()) {
-			if (POST_ANNOUNCE == $row['type']) ++$unread_announce_count;
-			if (POST_STICKY   == $row['type']) ++$unread_sticky_num;
+			if     (POST_ANNOUNCE == $row['type']) ++$unread_announce_count;
+			elseif (POST_STICKY   == $row['type']) ++$unread_sticky_num;
 		}
 		$short_content = get_short_content($row['topic_first_post_id']);
 		$user_avatar_url = $row['user_allowavatar'] ? get_user_avatar_url($row['user_avatar'], $row['user_avatar_type']) : '';
@@ -100,18 +100,18 @@ function get_topic_func($xmlrpc_params)
 	$db->sql_freeresult($result);
 	if (empty($topic_list)) $topic_list = null;
 
-	$response = new xmlrpcval(array(
+	$rpc = new xmlrpcval(array(
 		'total_topic_num' => new xmlrpcval($forum['forum_topics'], 'int'),
 		'forum_id'        => new xmlrpcval($forum['forum_id'], 'string'),
 		'forum_name'      => new xmlrpcval(html_entity_decode($forum['forum_name']), 'base64'),
-		'can_post'        => new xmlrpcval($forum['auth_post'], 'boolean'), // needs to check forum auths
+		'can_post'        => new xmlrpcval($forum['auth_post'], 'boolean'),
 		'unread_sticky_count'   => new xmlrpcval($unread_sticky_num, 'int'),
 		'unread_announce_count' => new xmlrpcval($unread_announce_count, 'int'),
 		'can_subscribe'   => new xmlrpcval($forum['auth_read'], 'boolean'),
 		'is_subscribed'   => new xmlrpcval(!empty($_SESSION['CPG_SESS']['Forums']['track_forums'][$forum['forum_id']]), 'boolean'),
 		'prefixes'        => new xmlrpcval(array(), 'array'),
-		'topics'          => new xmlrpcval($topic_list, 'array'),
+		'topics'          => new xmlrpcval($topic_list, 'array')
 		), 'struct');
 
-	return new xmlrpcresp($response);
+	return new xmlrpcresp($rpc);
 }
