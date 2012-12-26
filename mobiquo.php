@@ -59,7 +59,7 @@ if ($request_method_name && isset($server_param[$request_method_name]))
 	require(MOBIDIR.'function/'.$request_method_name.'.php');
 }
 $rpcServer = new xmlrpc_server($server_param, false);
-$rpcServer->setDebug(0);
+$rpcServer->setDebug(2);
 $rpcServer->allow_system_funcs = false;
 $rpcServer->compress_response = 'false';
 $rpcServer->response_charset_encoding = 'UTF-8';
