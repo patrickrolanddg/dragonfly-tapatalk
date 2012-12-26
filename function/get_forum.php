@@ -2,9 +2,7 @@
 /*======================================================================*\
 || #################################################################### ||
 || # DragonflyCMS Tapatalk plugin                                     # ||
-|| # Written by Jeff Mills (hybiepoo@hotmail.com) and based on        # ||
-|| # existing phpbb3 plugin for Tapatalk                              # ||
-|| # http://www.tapatalk.com | http://www.tapatalk.com/license.html   # ||
+|| # Written by Jeff Mills (hybiepoo@hotmail.com)                     # ||
 || #################################################################### ||
 \*======================================================================*/
 
@@ -48,8 +46,8 @@ function assocToStruct(array $data, $desc=false)
 		'forum_name' => new xmlrpcval(html_entity_decode($data['forum_name']), 'base64'),
 		'parent_id'  => new xmlrpcval($data['parent_id']),
 		'sub_only'   => new xmlrpcval(!empty($data['sub_only']) ?: false, 'boolean'),
-		'can_subscribe' => new xmlrpcval(is_user(), 'boolean'),
-		'is_subscribed' => new xmlrpcval(!empty($_SESSION['CPG_SESS']['Forums']['track_forums'][$data['forum_id']]), 'boolean'),
+		'can_subscribe' => new xmlrpcval($forum['auth_read'], 'boolean'),
+		'is_subscribed' => new xmlrpcval($forum['auth_read'] && !empty($_SESSION['CPG_SESS']['Forums']['track_forums'][$data['forum_id']]), 'boolean'),
 	);
 	if (isset($data['forum_desc']) && $desc)
 		$rpc['description'] = new xmlrpcval(html_entity_decode($data['forum_desc']), 'base64');
