@@ -497,7 +497,6 @@ function mobi_forums($parent=0)
 				$forum['subonly'] = true;
 			} else {
 				foreach ($forum['subforums'] as &$sub) {
-					$forum['subonly'] = true;
 					$forum['forum_topics'] += $sub['forum_topics'];
 					$forum['forum_posts'] += $sub['forum_posts'];
 					if ($sub['post_time'] > $forum['post_time']) {

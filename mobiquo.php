@@ -14,7 +14,7 @@ $module_name = 'Forums';
 
 // Initialise DragonflyCMS framework
 require_once('../includes/cmsinit.inc');
-
+error_reporting(E_ALL);
 if (!is_active('Forums')) {
 	header("{$_SERVER['SERVER_PROTOCOL']} 503 Service Unavailable");
 	exit;
@@ -37,7 +37,7 @@ require(MOBIDIR.'error_code.php');
 require(MOBIDIR.'config/config.php');
 
 $mobiquo_config = get_mobiquo_config();
-if (!$mobiquo_config['is_open']) {
+if (empty($mobiquo_config['is_open'])) {
 	header("{$_SERVER['SERVER_PROTOCOL']} 503 Service Unavailable");
 	exit;
 }
@@ -58,8 +58,8 @@ if ($request_method_name && isset($server_param[$request_method_name]))
 {
 	require(MOBIDIR.'function/'.$request_method_name.'.php');
 }
-
 $rpcServer = new xmlrpc_server($server_param, false);
+$rpcServer->setDebug(2);
 $rpcServer->allow_system_funcs = false;
 $rpcServer->compress_response = 'false';
 $rpcServer->response_charset_encoding = 'UTF-8';
