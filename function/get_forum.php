@@ -58,9 +58,10 @@ function assocToStruct(array $data, $desc=false)
 		$rpc['is_protected'] = new xmlrpcval($data['is_protected'], 'boolean');
 
 	if (!empty($data['child']))
+	{
 		$rpc['child'] = new xmlrpcval($data['child'], 'array');
-
-	if (!empty($data['subforums']))
+	}
+	else if (!empty($data['subforums']))
 	{
 		for ($i=0, $c=count($data['subforums']); $i<$c; ++$i) {
 			$data['subforums'][$i] = assocToStruct($data['subforums'][$i], $desc);

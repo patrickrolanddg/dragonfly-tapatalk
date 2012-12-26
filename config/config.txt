@@ -1,4 +1,4 @@
-sys_version = 9.3;
+sys_version = 9.3
 version = dev
 is_open = 1
 guest_okay = 1
